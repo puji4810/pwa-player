@@ -120,7 +120,7 @@ async function nowPlaying_playIndex(index) {
     renderNowPlayingQueue();
 }
 
-async function startNowPlayingFromPlaylistTable(playlist, startIndex, playlistName, noshufflefirsttime) {
+async function startNowPlayingFromPlaylistTable(playlist, startIndex, playlistName, noshufflefirsttime, randomStart = false) {
     nowPlayingQueue = playlistName
         ? playlist.map(item => ({ ...item, playlistName }))
         : playlist.slice();
@@ -136,26 +136,27 @@ async function startNowPlayingFromPlaylistTable(playlist, startIndex, playlistNa
     // Use startIndex directly for ordered queue
     if (playMode !== "shuffle") {
         nowPlayingIndex = startIndex;
+    } else if (randomStart) {
+        // "Play whole playlist" entry points start on a random track
+        nowPlayingIndex = 0;
     } else {
-        // In shuffle mode with startIndex=0, just play shuffledQueue[0]
-        // Otherwise find the shuffled position of the requested item
-        if (startIndex === 0) {
-            nowPlayingIndex = 0;
-        } else {
-            const startEntry = nowPlayingQueue[startIndex];
-            const foundIndex = shuffledQueue.findIndex(e => e.path === startEntry.path && e.playlistName === startEntry.playlistName);
-            nowPlayingIndex = (foundIndex >= 0) ? foundIndex : 0;
-        }
+        // Find the requested item's position in the shuffled queue so an
+        // explicitly selected entry is the one that plays (index 0 included)
+        const startEntry = nowPlayingQueue[startIndex];
+        const foundIndex = startEntry
+            ? shuffledQueue.findIndex(e => e.path === startEntry.path && e.playlistName === startEntry.playlistName)
+            : -1;
+        nowPlayingIndex = (foundIndex >= 0) ? foundIndex : 0;
     }
 
     await nowPlaying_playIndex(nowPlayingIndex);
 }
 
-async function startNowPlayingFromPlaylist(playlistName, startIndex) {
+async function startNowPlayingFromPlaylist(playlistName, startIndex, randomStart = false) {
     const playlists = await playlists_load();
     const list = playlists[playlistName];
     if (!list) return;
-    await startNowPlayingFromPlaylistTable(list, startIndex, playlistName, false);
+    await startNowPlayingFromPlaylistTable(list, startIndex, playlistName, false, randomStart);
 }
 
 async function playPrevious() {
@@ -304,7 +305,7 @@ async function restoreLastPlayback() {
         const playlists = await playlists_load();
         const list = playlists[defaultPlaylist];
         if (list && list.length > 0) {
-            await startNowPlayingFromPlaylist(defaultPlaylist, 0);
+            await startNowPlayingFromPlaylist(defaultPlaylist, 0, true);
             return true;
         }
     }

@@ -507,7 +507,7 @@ function showPlaylistHeaderMenu(playlistName, button) {
             const actionisplay = action ==="play";
             if (actionisplay || action === "play-keep-open") {
                 // Play this playlist - respects shuffle mode
-                await startNowPlayingFromPlaylist(playlistName, 0);
+                await startNowPlayingFromPlaylist(playlistName, 0, true);
                 if (actionisplay) {
                     closeActiveView();
                 }
