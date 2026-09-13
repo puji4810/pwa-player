@@ -235,10 +235,11 @@ async function playNext() {
             break;
 
         case "once":
+            // Advance only if a next entry exists — otherwise stay and stop
             if (++nowPlayingIndex >= nowPlayingQueue.length) {
                 nowPlayingIndex = nowPlayingQueue.length - 1;
+                toplay = false;
             }
-            toplay = false;
             break;
     }
     if (nowPlayingIndex >= nowPlayingQueue.length) {
@@ -247,7 +248,9 @@ async function playNext() {
     if (nowPlayingIndex < 0) {
         nowPlayingIndex = 0;
     }
-    await nowPlaying_playIndex(nowPlayingIndex);
+    if (toplay) {
+        await nowPlaying_playIndex(nowPlayingIndex);
+    }
 }
 
 document.getElementById("prevBtn").addEventListener("click", playPrevious);

@@ -399,6 +399,12 @@ const ZHCN_TRANSLATIONS = {
     // Skip iframes in background
     skipIframesInBackground: "后台播放时跳过嵌入式内容",
     skipIframesInBackgroundHint: "当标签页隐藏时，跳过YouTube/Spotify等内容，避免浏览器自动播放策略问题。",
+    embeddedEndBehavior: "嵌入媒体播放结束时",
+    embeddedEndPause: "暂停",
+    embeddedEndNext: "播放列表下一项",
+    embeddedEndBehaviorHint: "嵌入式或网络条目（YouTube、Spotify、IPTV链接等）播放结束后的行为。",
+    useUrlPlaylist: "使用URL自带的播放列表",
+    useUrlPlaylistHint: "当URL自带播放列表（例如YouTube的list=参数）时，允许网站依次播放。关闭后：播放列表URL只播放第一个视频，watch?v=&list=的URL只播放该视频。",
 
     // Remote Storage
     mountRemote: "挂载远程",

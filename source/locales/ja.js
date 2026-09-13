@@ -396,6 +396,12 @@ const JA_TRANSLATIONS = {
     // Skip iframes in background
     skipIframesInBackground: "バックグラウンド再生時に埋め込みコンテンツをスキップ",
     skipIframesInBackgroundHint: "タブが非表示の時、YouTube/Spotifyなどをスキップしてブラウザの自動再生ポリシー問題を回避します。",
+    embeddedEndBehavior: "埋め込みメディアの再生終了時",
+    embeddedEndPause: "一時停止",
+    embeddedEndNext: "プレイリストの次を再生",
+    embeddedEndBehaviorHint: "埋め込み/ネットワーク項目（YouTube、Spotify、IPTVリンクなど）の再生終了時の動作。",
+    useUrlPlaylist: "URL内のプレイリストを使用",
+    useUrlPlaylistHint: "URLがプレイリストを持つ場合（例：YouTubeのlist=パラメータ）、サイト側で順次再生します。オフの場合：プレイリストURLは最初の動画のみ、watch?v=&list=のURLはその動画のみ再生します。",
 
     // Remote Storage
     mountRemote: "リモートをマウント",

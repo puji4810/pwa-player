@@ -337,6 +337,19 @@
                 </label>
                 <p class="setting-hint" data-i18n="skipIframesInBackgroundHint">When tab is hidden, skip YouTube/Spotify/etc. entries to avoid browser autoplay policy issues.</p>
                 <label class="setting-label">
+                    <span data-i18n="embeddedEndBehavior">When embedded media ends</span>
+                    <select id="embeddedEndBehavior" class="language-select">
+                        <option value="pause" data-i18n="embeddedEndPause">Pause</option>
+                        <option value="next" data-i18n="embeddedEndNext">Play next in playlist</option>
+                    </select>
+                </label>
+                <p class="setting-hint" data-i18n="embeddedEndBehaviorHint">What to do when an embedded or network entry (YouTube, Spotify, IPTV link...) finishes.</p>
+                <label class="setting-toggle">
+                    <input type="checkbox" id="useUrlPlaylist">
+                    <span data-i18n="useUrlPlaylist">Use playlist embedded in URL</span>
+                </label>
+                <p class="setting-hint" data-i18n="useUrlPlaylistHint">When a URL carries its own playlist (e.g. YouTube list= parameter), let the site play through it. Off: a playlist URL plays only its first video, and a watch?v=&list= URL plays just that video.</p>
+                <label class="setting-label">
                     <span data-i18n="controlsAutoHideDelay">Controls Auto-hide (ms)</span>
                     <input type="number" id="controlsAutoHideDelayInput" class="setting-input-small" min="0" max="60000">
                 </label>

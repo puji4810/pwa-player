@@ -1071,6 +1071,8 @@ function getProfileSettingsKeys() {
         "shortcutSpeedEnabled",
         "shortcutLoopEnabled",
         "videoPreviewEnabled",
+        "embeddedEndBehavior",
+        "useUrlPlaylist",
         "corsBypassUrl",
         "networkRetryCount",
         "iptvSourceRetryCount",
@@ -1123,6 +1125,8 @@ function createDefaultProfileData() {
             shortcutSpeedEnabled: "true",
             shortcutLoopEnabled: "true",
             videoPreviewEnabled: "true",
+            embeddedEndBehavior: "pause",
+            useUrlPlaylist: "false",
             corsBypassUrl: "",
             networkRetryCount: DEFAULT_NETWORK_RETRY_COUNT.toString(),
             iptvSourceRetryCount: DEFAULT_IPTV_SOURCE_RETRY_COUNT.toString(),
@@ -1226,6 +1230,12 @@ async function applyProfileData(profileData) {
 
     const retryBeforeSrcResetInput = document.getElementById("retryBeforeSrcReset");
     if (retryBeforeSrcResetInput) retryBeforeSrcResetInput.value = localStorage.getItem("retryBeforeSrcReset") || DEFAULT_RETRY_BEFORE_SRC_RESET.toString();
+
+    const embeddedEndBehaviorSelect = document.getElementById("embeddedEndBehavior");
+    if (embeddedEndBehaviorSelect) embeddedEndBehaviorSelect.value = localStorage.getItem("embeddedEndBehavior") || "pause";
+
+    const useUrlPlaylistCheckbox = document.getElementById("useUrlPlaylist");
+    if (useUrlPlaylistCheckbox) useUrlPlaylistCheckbox.checked = localStorage.getItem("useUrlPlaylist") === "true";
 
     showToast(t('profileLoaded', 'Profile loaded'));
 }
@@ -1627,4 +1637,42 @@ if (skipIframesInBackgroundCheckbox) {
 // Helper function to check if skipping iframes in background is enabled
 function isSkipIframesInBackgroundEnabled() {
     return localStorage.getItem("skipIframesInBackground") !== "false";
+}
+
+// =====================================================
+// Embedded End Behavior Setting
+// =====================================================
+const embeddedEndBehaviorSelect = document.getElementById("embeddedEndBehavior");
+
+if (embeddedEndBehaviorSelect) {
+    embeddedEndBehaviorSelect.value = localStorage.getItem("embeddedEndBehavior") || "pause";
+
+    embeddedEndBehaviorSelect.addEventListener("change", () => {
+        localStorage.setItem("embeddedEndBehavior", embeddedEndBehaviorSelect.value);
+    });
+}
+
+// 'pause' = stop when an embedded/network entry finishes;
+// 'next' = advance to the next entry in our playlist
+function getEmbeddedEndBehavior() {
+    return localStorage.getItem("embeddedEndBehavior") || "pause";
+}
+
+// =====================================================
+// URL Playlist Setting
+// =====================================================
+const useUrlPlaylistCheckbox = document.getElementById("useUrlPlaylist");
+
+if (useUrlPlaylistCheckbox) {
+    useUrlPlaylistCheckbox.checked = localStorage.getItem("useUrlPlaylist") === "true";
+
+    useUrlPlaylistCheckbox.addEventListener("change", () => {
+        localStorage.setItem("useUrlPlaylist", useUrlPlaylistCheckbox.checked ? "true" : "false");
+    });
+}
+
+// Whether a URL that carries its own playlist (e.g. YouTube list=) may
+// let the remote site advance through that playlist
+function isUrlPlaylistEnabled() {
+    return localStorage.getItem("useUrlPlaylist") === "true";
 }

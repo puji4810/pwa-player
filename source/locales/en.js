@@ -399,6 +399,12 @@ const EN_TRANSLATIONS = {
     // Skip iframes in background
     skipIframesInBackground: "Skip embedded content when playing in background",
     skipIframesInBackgroundHint: "When tab is hidden, skip YouTube/Spotify/etc. entries to avoid browser autoplay policy issues.",
+    embeddedEndBehavior: "When embedded media ends",
+    embeddedEndPause: "Pause",
+    embeddedEndNext: "Play next in playlist",
+    embeddedEndBehaviorHint: "What to do when an embedded or network entry (YouTube, Spotify, IPTV link...) finishes.",
+    useUrlPlaylist: "Use playlist embedded in URL",
+    useUrlPlaylistHint: "When a URL carries its own playlist (e.g. YouTube list= parameter), let the site play through it. Off: a playlist URL plays only its first video, and a watch?v=&list= URL plays just that video.",
 
     // Remote Storage
     mountRemote: "Mount Remote",
