@@ -281,7 +281,7 @@ if (sideRailHandle) {
         if (!handleStart) return;
         const side = getSidePanelSide();
         const inward = side === "right" ? handleStart.x - e.clientX : e.clientX - handleStart.x;
-        if (inward > 24) {
+        if (inward > 16) {
             handleStart = null;
             handleDragSuppressClick = true;
             showSideRail();

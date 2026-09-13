@@ -148,20 +148,6 @@ body {
   flex-wrap: wrap; /* allow wrapping */
 }
 
-@media (max-width: 480px) {
-    .control-group.left-controls,
-    .control-group.right-controls {
-        width: 100%;        /* each group takes full width */
-        justify-content: center; /* center buttons */
-        margin-top: 4px;
-        flex-wrap: wrap; /* allow wrapping */
-    }
-
-    #volumeSlider {
-        width: 60%; /* shrink slider on small screens */
-    }
-}
-
 .left-controls,
 .right-controls {
   display: flex;
@@ -469,6 +455,13 @@ input[type="range"]::-moz-range-thumb {
   width: 100%;
 }
 
+/* The config row duplicates the side rail's shortcuts — only show it
+   when the rail is off */
+body.side-left #configOptions,
+body.side-right #configOptions {
+  display: none;
+}
+
 /* Mobile Tuning */
 @media (max-width: 600px) {
   :root {
@@ -482,8 +475,21 @@ input[type="range"]::-moz-range-thumb {
   }
 
   #controls {
-    max-width: 97vw;
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
     bottom: 6px;
+  }
+
+  .control-group.left-controls,
+  .control-group.right-controls {
+    width: 100%;        /* each group takes full width */
+    justify-content: center; /* center buttons */
+    margin-top: 4px;
+    flex-wrap: wrap; /* allow wrapping */
+  }
+
+  #volumeSlider {
+    width: 60%; /* shrink slider on small screens */
   }
 }
 
@@ -1298,22 +1304,24 @@ body.side-right #sideEdgeTrigger { right: 0; }
    Hit area stays wide; the visible part is just a thin glass sliver. */
 #sideRailHandle {
     position: fixed;
-    top: 42%;
+    top: 50%;
+    transform: translateY(-50%);
     left: 0;
     z-index: 1400;
     display: none;
-    width: 22px;
-    height: 64px;
+    width: 36px;
+    height: 120px;
     touch-action: none;
     cursor: grab;
 }
 #sideRailHandle::before {
     content: "";
     position: absolute;
-    top: 10px;
+    top: 50%;
+    transform: translateY(-50%);
     left: 0;
     width: 6px;
-    height: 44px;
+    height: 56px;
     border-radius: 0 6px 6px 0;
     background: rgba(255, 255, 255, 0.28);
     -webkit-backdrop-filter: blur(10px);

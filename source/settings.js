@@ -276,8 +276,9 @@ function applyButtonSize(size) {
     }
 }
 
-// Load saved preference (default: normal)
-const savedButtonSize = localStorage.getItem("buttonSize") || "normal";
+// Load saved preference (default: compact on small screens, normal otherwise)
+const defaultButtonSize = window.matchMedia("(max-width: 600px)").matches ? "compact" : "normal";
+const savedButtonSize = localStorage.getItem("buttonSize") || defaultButtonSize;
 buttonSizeSelect.value = savedButtonSize;
 applyButtonSize(savedButtonSize);
 
@@ -288,7 +289,7 @@ buttonSizeSelect.addEventListener("change", () => {
 });
 
 function getButtonSize() {
-    return localStorage.getItem("buttonSize") || "normal";
+    return localStorage.getItem("buttonSize") || defaultButtonSize;
 }
 
 // =====================================================
