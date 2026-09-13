@@ -32,7 +32,7 @@
                 <!-- Invisible trigger zone on right side to reveal button -->
                 <div id="embeddedShowBtnTriggerZone" class="hidden"></div>
                 <!-- Floating button to show controls for embedded player -->
-                <button id="embeddedShowControlsBtn" class="hidden" data-icon="gear"></button>
+                <button id="embeddedShowControlsBtn" class="hidden" data-icon="sliders" data-i18n-title="showControls"></button>
                 <!-- Video status overlay (loading/error) -->
                 <div id="videoStatusOverlay" class="video-status-overlay hidden">
                     <div class="video-status-content">
@@ -365,6 +365,15 @@
                     </select>
                 </label>
                 <p class="setting-hint" data-i18n="buttonSizeHint">Adjust the size of control buttons. Compact removes gaps between buttons.</p>
+                <label class="setting-label">
+                    <span data-i18n="sidePanel">Side Panel</span>
+                    <select id="sidePanelPosition" class="language-select">
+                        <option value="left" data-i18n="sidePanelLeft">Left</option>
+                        <option value="right" data-i18n="sidePanelRight">Right</option>
+                        <option value="off" data-i18n="sidePanelOff">Off</option>
+                    </select>
+                </label>
+                <p class="setting-hint" data-i18n="sidePanelHint">Hover the screen edge or swipe inward from it to reveal a floating bar with quick access to Now Playing, Playlists, Storage, IPTV and Settings — without leaving the player.</p>
 
                 <h3 data-i18n="keyboardShortcuts">Keyboard Shortcuts</h3>
                 <label class="setting-toggle">
@@ -505,7 +514,21 @@
             </main>
         </div>
 
+        <!-- Edge trigger zone that reveals the side rail -->
+        <div id="sideEdgeTrigger" class="hidden"></div>
+        <!-- Floating side rail: quick-access panels without leaving the player -->
+        <nav id="sideRail" class="hidden">
+            <button id="sideRailPlayerBtn" class="rail-btn hidden" data-icon="home" data-i18n-title="backToPlayer"></button>
+            <div id="sideRailSep" class="rail-sep hidden"></div>
+            <button class="rail-btn" data-sidepanel="nowPlayingView" data-icon="waveform" data-i18n-title="nowPlaying"></button>
+            <button class="rail-btn" data-sidepanel="playlistView" data-icon="musicList" data-i18n-title="playlist"></button>
+            <button class="rail-btn" data-sidepanel="storageView" data-icon="archive" data-i18n-title="storageManager"></button>
+            <button class="rail-btn" data-sidepanel="iptvView" data-icon="tv" data-i18n-title="iptvChannels"></button>
+            <button class="rail-btn" data-sidepanel="settingsView" data-icon="gear" data-i18n-title="settings"></button>
+        </nav>
+
         <script src="icons.js"></script>
+        <script src="dialog.js"></script>
         <script src="indexeddb.js"></script>
         <script src="locales/en.js"></script>
         <script src="locales/zhcn.js"></script>
@@ -539,6 +562,7 @@
         <script src="imageviewer.js"></script>
         <script src="wakelock.js"></script>
         <script src="settings.js"></script>
+        <script src="sidepanel.js"></script>
         <script src="sw-register.js"></script>
         <div id="toast" class="toast"></div>
     </body>

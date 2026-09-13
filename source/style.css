@@ -699,6 +699,102 @@ input[type="range"]::-moz-range-thumb {
     color: var(--danger);
 }
 
+/* Glass modal dialogs (alert / confirm / prompt / option picker) */
+.glass-dialog-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.32);
+    -webkit-backdrop-filter: blur(8px) saturate(1.3);
+    backdrop-filter: blur(8px) saturate(1.3);
+    animation: dlgFadeIn 0.16s ease;
+}
+.glass-dialog {
+    min-width: 240px;
+    max-width: min(380px, 88vw);
+    max-height: 72vh;
+    overflow-y: auto;
+    padding: 20px 18px 14px;
+    border-radius: 18px;
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow),
+                inset 0 0.5px 0 var(--glass-highlight);
+    color: var(--color-fg);
+    outline: none;
+    animation: dlgPop 0.18s cubic-bezier(0.32, 0.72, 0.35, 1.2);
+}
+.glass-dialog-title {
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.glass-dialog-msg {
+    font-size: 13.5px;
+    line-height: 1.5;
+    text-align: center;
+    white-space: pre-wrap;
+    word-break: break-word;
+    margin-bottom: 16px;
+}
+.glass-dialog-input {
+    width: 100%;
+    box-sizing: border-box;
+    margin-bottom: 14px;
+    padding: 8px 10px;
+    font-size: 14px;
+    color: var(--color-fg);
+    background: var(--color-hover);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    outline: none;
+}
+.glass-dialog-input:focus {
+    border-color: var(--accent);
+}
+.glass-dialog-btns {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+.glass-dialog-btns.stack {
+    flex-direction: column;
+}
+.dlg-btn {
+    flex: 1;
+    padding: 9px 14px;
+    font-size: 14px;
+    color: var(--color-fg);
+    background: var(--color-hover);
+    border: 1px solid transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    white-space: normal;
+    word-break: break-word;
+}
+.dlg-btn:hover {
+    background: var(--color-active);
+}
+.dlg-btn.primary {
+    background: var(--accent);
+    color: #fff;
+    font-weight: 600;
+}
+.dlg-btn.primary:hover {
+    filter: brightness(1.12);
+}
+.dlg-btn.danger {
+    color: var(--danger);
+}
+@keyframes dlgFadeIn { from { opacity: 0; } }
+@keyframes dlgPop { from { opacity: 0; transform: scale(0.94) translateY(6px); } }
+
 @media (prefers-color-scheme: light) {
   :root {
     --color-bg: #f2f2f7;
@@ -819,6 +915,17 @@ input[type="range"]::-moz-range-thumb {
   background: transparent;
   pointer-events: auto;  /* Capture mouse events */
   cursor: default;
+}
+
+/* When the side rail docks on the right, the embedded controls
+   affordance moves to the opposite edge so the two never overlap */
+body.side-right #embeddedShowBtnTriggerZone {
+  right: auto;
+  left: 0;
+}
+body.side-right #embeddedShowControlsBtn {
+  right: auto;
+  left: 15px;
 }
 
 .iptv-nsfw-badge {
@@ -974,6 +1081,23 @@ input[type="range"]::-moz-range-thumb {
 
 .np-item-title {
     flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+}
+.np-item-name {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.np-item-badges {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+.np-item-badges .icon {
+    margin-right: 0;
 }
 
 .np-item-menu {
@@ -993,6 +1117,26 @@ input[type="range"]::-moz-range-thumb {
 .np-item-menu:hover {
     opacity: 1;
     background: var(--color-hover);
+}
+
+/* Source-playlist badge on queue items — same chip shape as .iptv-badge */
+.np-src-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    background: rgba(128, 128, 128, 0.3);
+    color: var(--color-fg);
+    white-space: nowrap;
+}
+.np-src-badge .icon {
+    width: 9px;
+    height: 9px;
+    color: inherit;
+}
+.np-src-name {
+    max-width: 90px;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* Floating scroll buttons — glass circles */
@@ -1129,4 +1273,151 @@ input[type="range"]::-moz-range-thumb {
     color: transparent !important;
     caret-color: var(--color-text);
     text-shadow: none;
+}
+
+/* ============================================================
+   Side rail + slide-over sheets
+   A thin edge trigger reveals a floating vertical rail with
+   quick access to the overlay views as sheets — the player
+   stays visible behind them (incl. embedded iframes).
+   ============================================================ */
+
+#sideEdgeTrigger {
+    position: fixed;
+    top: 12%;
+    bottom: 12%;
+    width: 14px;
+    z-index: 1400; /* above embedded iframe + its trigger zone */
+}
+body.side-left #sideEdgeTrigger { left: 0; }
+body.side-right #sideEdgeTrigger { right: 0; }
+
+#sideRail {
+    position: fixed;
+    top: 50%;
+    z-index: 1600; /* above sheets so panels can be switched */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 7px 6px;
+    border-radius: 999px;
+    background: var(--glass-bg-strong);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow),
+                inset 0 0.5px 0 var(--glass-highlight);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0.35, 1),
+                opacity 0.25s ease;
+}
+body.side-left #sideRail {
+    left: 12px;
+    transform: translateY(-50%) translateX(calc(-100% - 24px));
+}
+body.side-right #sideRail {
+    right: 12px;
+    transform: translateY(-50%) translateX(calc(100% + 24px));
+}
+/* Must outrank the side-docked transform rules above */
+body #sideRail.rail-visible {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+}
+#sideRail.hidden {
+    display: none;
+}
+
+#sideRail .rail-btn {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    padding: 0;
+    border-radius: 50%;
+    color: var(--color-fg);
+}
+#sideRail .rail-btn .icon {
+    width: 19px;
+    height: 19px;
+}
+#sideRail .rail-btn:hover {
+    background: var(--color-hover);
+}
+#sideRail .rail-btn.active {
+    color: var(--accent);
+}
+#sideRailPlayerBtn {
+    color: var(--accent);
+}
+
+.rail-sep {
+    width: 60%;
+    height: 0.5px;
+    background: var(--glass-border);
+    margin: 3px 0;
+}
+
+/* Slide-over sheet — the overlay view re-docked to a screen edge */
+.overlay-view.side-sheet {
+    top: 12px;
+    bottom: 12px;
+    height: auto;
+    width: min(400px, calc(100vw - 24px));
+    border-radius: 24px;
+    border: 0.5px solid var(--glass-border);
+    box-shadow: var(--glass-shadow),
+                inset 0 0.5px 0 var(--glass-highlight);
+    z-index: 1500;
+    touch-action: pan-y; /* vertical scroll stays native; horizontal drag is ours */
+    transition: transform 0.32s cubic-bezier(0.32, 0.72, 0.35, 1);
+}
+.overlay-view.side-sheet.sheet-left {
+    left: 12px;
+    right: auto;
+    transform: translateX(calc(-100% - 20px));
+}
+.overlay-view.side-sheet.sheet-right {
+    right: 12px;
+    left: auto;
+    transform: translateX(calc(100% + 20px));
+}
+.overlay-view.side-sheet.sheet-visible {
+    transform: translateX(0);
+}
+.overlay-view.side-sheet .content {
+    max-width: none;
+    padding: 14px;
+}
+
+/* Keep floating scroll buttons reachable beside a right-docked sheet */
+body.sheet-open.side-right .scroll-btn {
+    right: calc(min(400px, 100vw - 24px) + 28px);
+}
+
+/* Recentre the control dock inside the space left of/right of an open
+   sheet, so the two never sit flush against each other */
+#controls {
+    transition: opacity 0.3s ease, left 0.32s cubic-bezier(0.32, 0.72, 0.35, 1);
+}
+@media (min-width: 1100px) {
+    body.sheet-open.side-left #controls {
+        left: calc((100vw + min(400px, 100vw - 24px) + 12px) / 2);
+        max-width: calc(100vw - min(400px, 100vw - 24px) - 40px);
+    }
+    body.sheet-open.side-right #controls {
+        left: calc((100vw - min(400px, 100vw - 24px) - 12px) / 2);
+        max-width: calc(100vw - min(400px, 100vw - 24px) - 40px);
+    }
+}
+
+@media (prefers-color-scheme: light) {
+    /* Keep the rail a dark glass pill over bright video, like the dock */
+    #sideRail {
+        background: rgba(30, 30, 34, 0.55);
+        border-color: rgba(255, 255, 255, 0.16);
+        color: rgba(255, 255, 255, 0.92);
+        --color-fg: rgba(255, 255, 255, 0.92);
+        --color-hover: rgba(255, 255, 255, 0.16);
+    }
 }

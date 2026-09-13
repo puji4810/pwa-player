@@ -106,7 +106,7 @@ function importCustomChannels() {
 async function clearCustomChannels() {
     const t = (key, params) => window.i18n ? window.i18n.t(key, params) : key;
 
-    if (!confirm(t('confirmClearChannels', 'Delete all custom channels?'))) return;
+    if (!await glassConfirm(t('confirmClearChannels', 'Delete all custom channels?'))) return;
 
     await saveCustomIptvChannels([]);
     renderIPTVList();
@@ -194,20 +194,14 @@ function showIPTVChannelMenu(channel, url, button) {
                 const playlists = await playlists_load();
                 const names = Object.keys(playlists);
 
-                const choice = prompt(
-                    t('whichPlaylist') + "\n" +
-                    names.map((n, i) => `${i + 1}. ${n}`).join("\n"),
-                    "1"
-                );
-
-                if (!choice) {
+                if (names.length === 0) {
+                    alert(t('noPlaylistsAvailable', 'No playlists available. Please create a playlist first.'));
                     closeMenu();
                     return;
                 }
 
-                const index = parseInt(choice, 10) - 1;
-                if (index < 0 || index >= names.length) {
-                    alert(t('invalidSelection'));
+                const index = await pickOption(t('whichPlaylist'), names);
+                if (index === null) {
                     closeMenu();
                     return;
                 }
@@ -586,20 +580,14 @@ function showCustomChannelMenu(channel, url, button, customIndex) {
                 const playlists = await playlists_load();
                 const names = Object.keys(playlists);
 
-                const choice = prompt(
-                    t('whichPlaylist', 'Add to which playlist?') + "\n" +
-                    names.map((n, i) => `${i + 1}. ${n}`).join("\n"),
-                    "1"
-                );
-
-                if (!choice) {
+                if (names.length === 0) {
+                    alert(t('noPlaylistsAvailable', 'No playlists available. Please create a playlist first.'));
                     closeMenu();
                     return;
                 }
 
-                const index = parseInt(choice, 10) - 1;
-                if (index < 0 || index >= names.length) {
-                    alert(t('invalidSelection', 'Invalid selection'));
+                const index = await pickOption(t('whichPlaylist', 'Add to which playlist?'), names);
+                if (index === null) {
                     closeMenu();
                     return;
                 }
@@ -667,7 +655,7 @@ function showCustomChannelMenu(channel, url, button, customIndex) {
             }
 
             if (action === "rename") {
-                const newName = prompt(t('newChannelName', 'New channel name:'), channel.name);
+                const newName = await glassPrompt(t('newChannelName', 'New channel name:'), channel.name);
                 if (newName && newName.trim()) {
                     let customChannels = await loadCustomIptvChannels();
                     customChannels[customIndex].name = newName.trim();
@@ -677,7 +665,7 @@ function showCustomChannelMenu(channel, url, button, customIndex) {
             }
 
             if (action === "delete") {
-                if (confirm(t('confirmDeleteChannel', 'Delete this channel?'))) {
+                if (await glassConfirm(t('confirmDeleteChannel', 'Delete this channel?'))) {
                     let customChannels = await loadCustomIptvChannels();
                     customChannels.splice(customIndex, 1);
                     await saveCustomIptvChannels(customChannels);

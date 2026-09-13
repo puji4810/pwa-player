@@ -193,7 +193,7 @@ screenCaptureBtn.addEventListener("click", async () => {
 
         // Ask user if they want to enable microphone
         const t = (key) => window.i18n ? window.i18n.t(key) : key;
-        if (confirm(t("enableMicrophonePrompt") || "Enable microphone for this recording?")) {
+        if (await glassConfirm(t("enableMicrophonePrompt") || "Enable microphone for this recording?")) {
             toggleMicInRecording();
         }
 

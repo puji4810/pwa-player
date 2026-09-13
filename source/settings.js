@@ -292,6 +292,23 @@ function getButtonSize() {
 }
 
 // =====================================================
+// Side Panel (floating rail) position: left | right | off
+// =====================================================
+const sidePanelPositionSelect = document.getElementById("sidePanelPosition");
+
+function getSidePanelPosition() {
+    return localStorage.getItem("sidePanelPosition") || "left";
+}
+
+if (sidePanelPositionSelect) {
+    sidePanelPositionSelect.value = getSidePanelPosition();
+    sidePanelPositionSelect.addEventListener("change", () => {
+        localStorage.setItem("sidePanelPosition", sidePanelPositionSelect.value);
+        if (typeof applySidePanelPosition === "function") applySidePanelPosition();
+    });
+}
+
+// =====================================================
 // Playback Speed Control
 // =====================================================
 const speedValue = document.getElementById("speedValue");
@@ -1306,7 +1323,7 @@ function initProfiles() {
     // New profile
     if (newBtn) {
         newBtn.addEventListener("click", async () => {
-            const name = prompt(t('newProfileName', 'New profile name:'));
+            const name = await glassPrompt(t('newProfileName', 'New profile name:'));
             if (!name || !name.trim()) return;
 
             const profiles = getProfiles();
@@ -1331,7 +1348,7 @@ function initProfiles() {
     // Duplicate profile (copy current settings)
     if (duplicateBtn) {
         duplicateBtn.addEventListener("click", async () => {
-            const name = prompt(t('newProfileName', 'New profile name:'));
+            const name = await glassPrompt(t('newProfileName', 'New profile name:'));
             if (!name || !name.trim()) return;
 
             const profiles = getProfiles();
@@ -1355,14 +1372,14 @@ function initProfiles() {
 
     // Rename profile
     if (renameBtn) {
-        renameBtn.addEventListener("click", () => {
+        renameBtn.addEventListener("click", async () => {
             const oldName = getCurrentProfileName();
             if (oldName === DEFAULT_PROFILE_NAME) {
                 alert(t('cannotRenameDefault', 'Cannot rename default profile'));
                 return;
             }
 
-            const newName = prompt(t('newProfileName', 'New profile name:'), oldName);
+            const newName = await glassPrompt(t('newProfileName', 'New profile name:'), oldName);
             if (!newName || !newName.trim() || newName === oldName) return;
 
             const profiles = getProfiles();
@@ -1383,7 +1400,7 @@ function initProfiles() {
     // Reset profile
     if (resetBtn) {
         resetBtn.addEventListener("click", async () => {
-            if (!confirm(t('confirmResetProfile', 'Reset this profile to default settings?'))) return;
+            if (!await glassConfirm(t('confirmResetProfile', 'Reset this profile to default settings?'))) return;
 
             const name = getCurrentProfileName();
             const profiles = getProfiles();
@@ -1397,14 +1414,14 @@ function initProfiles() {
 
     // Delete profile
     if (deleteBtn) {
-        deleteBtn.addEventListener("click", () => {
+        deleteBtn.addEventListener("click", async () => {
             const name = getCurrentProfileName();
             if (name === DEFAULT_PROFILE_NAME) {
                 alert(t('cannotDeleteDefault', 'Cannot delete default profile'));
                 return;
             }
 
-            if (!confirm(t('confirmDeleteProfile', 'Delete this profile?'))) return;
+            if (!await glassConfirm(t('confirmDeleteProfile', 'Delete this profile?'))) return;
 
             const profiles = getProfiles();
             delete profiles[name];
@@ -1452,7 +1469,7 @@ function initProfiles() {
 
                 // Ask for profile name
                 const defaultName = profileData.profileName || t('importedProfile', 'Imported');
-                const name = prompt(t('newProfileName', 'New profile name:'), defaultName);
+                const name = await glassPrompt(t('newProfileName', 'New profile name:'), defaultName);
                 if (!name || !name.trim()) return;
 
                 const profiles = getProfiles();
@@ -1460,7 +1477,7 @@ function initProfiles() {
                 saveProfiles(profiles);
 
                 // Ask if user wants to switch to imported profile
-                if (confirm(t('switchToImportedProfile', 'Switch to imported profile?'))) {
+                if (await glassConfirm(t('switchToImportedProfile', 'Switch to imported profile?'))) {
                     setCurrentProfileName(name);
                     await applyProfileData(profileData);
                 }
@@ -1508,9 +1525,9 @@ function initSaveLocationClearHandlers() {
     const videoInput = document.getElementById("videoRecordingLocationInput");
     const screenshotInput = document.getElementById("screenshotLocationInput");
 
-    const clearHandler = (type) => {
+    const clearHandler = async (type) => {
         if (!localStorage.getItem(`saveLocation_${type}`)) return;
-        if (confirm("Clear this save location?")) {
+        if (await glassConfirm("Clear this save location?")) {
             localStorage.removeItem(`saveLocation_${type}`);
             updateSaveLocationsDisplay();
             showToast("Save location cleared.");

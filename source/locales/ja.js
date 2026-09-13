@@ -75,6 +75,10 @@ const JA_TRANSLATIONS = {
 
     // Playlist
     addToPlaylist: "プレイリストに追加",
+    addToQueue: "キューに追加",
+    addedToQueue: "キューに追加しました",
+    noOtherPlaylists: "他のプレイリストがありません。",
+    alreadyInPlaylist: "{name} は既にプレイリスト {playlist} にあります",
     newPlaylist: "新規プレイリスト",
     whichPlaylist: "どのプレイリストに追加しますか？",
     playKeepPanel: "再生（パネルを開いたまま）",
@@ -166,6 +170,13 @@ const JA_TRANSLATIONS = {
     compact: "コンパクト",
     normal: "標準",
     large: "大",
+    sidePanel: "サイドパネル",
+    sidePanelLeft: "左",
+    sidePanelRight: "右",
+    sidePanelOff: "オフ",
+    sidePanelHint: "画面端にカーソルを合わせるか、端から内側にスワイプするとフローティングバーが表示され、プレーヤーを離れずに再生中・プレイリスト・ストレージ・IPTV・設定へアクセスできます。",
+    backToPlayer: "プレーヤーに戻る",
+    showControls: "コントロールを表示",
     keyboardShortcuts: "キーボードショートカット",
     shortcutSpeedEnabled: "A/D/S - 速度制御",
     shortcutLoopEnabled: "J/K/L - A-Bループ",
@@ -227,6 +238,7 @@ const JA_TRANSLATIONS = {
     // Common
     close: "閉じる",
     cancel: "キャンセル",
+    ok: "OK",
     removeFromQueue: "キューから削除",
     confirm: "確認",
     yes: "はい",

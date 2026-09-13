@@ -78,6 +78,10 @@ const EN_TRANSLATIONS = {
 
     // Playlist
     addToPlaylist: "Add to Playlist",
+    addToQueue: "Add to Queue",
+    addedToQueue: "Added to queue",
+    noOtherPlaylists: "No other playlists available.",
+    alreadyInPlaylist: "{name} is already in playlist {playlist}",
     newPlaylist: "New Playlist",
     whichPlaylist: "Add to which playlist?",
     playKeepPanel: "Play (keep panel open)",
@@ -169,6 +173,13 @@ const EN_TRANSLATIONS = {
     compact: "Compact",
     normal: "Normal",
     large: "Large",
+    sidePanel: "Side Panel",
+    sidePanelLeft: "Left",
+    sidePanelRight: "Right",
+    sidePanelOff: "Off",
+    sidePanelHint: "Hover the screen edge or swipe inward from it to reveal a floating bar with quick access to Now Playing, Playlists, Storage, IPTV and Settings — without leaving the player.",
+    backToPlayer: "Back to Player",
+    showControls: "Show Controls",
     keyboardShortcuts: "Keyboard Shortcuts",
     shortcutSpeedEnabled: "A/D/S - Speed control",
     shortcutLoopEnabled: "J/K/L - A-B Loop",
@@ -230,6 +241,7 @@ const EN_TRANSLATIONS = {
     // Common
     close: "Close",
     cancel: "Cancel",
+    ok: "OK",
     removeFromQueue: "Remove from Queue",
     confirm: "Confirm",
     yes: "Yes",

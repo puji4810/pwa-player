@@ -3,7 +3,8 @@ function getAllViews() {
 }
 
 function getActiveView() {
-  return getAllViews().find(v => !v.classList.contains("hidden")) || null;
+  // Sheets in their closing animation no longer count as active
+  return getAllViews().find(v => !v.classList.contains("hidden") && !v.classList.contains("sheet-closing")) || null;
 }
 
 // Scroll position storage for each view (includes search state)
@@ -65,11 +66,21 @@ function switchView(viewId) {
   const openMenu = document.querySelector(".context-menu");
   if (openMenu) openMenu.remove();
 
+  // A side sheet is transient — drop its history entry and close it
+  // before navigating to a full-page view
+  if (history.state && history.state.sidePanel) {
+    history.replaceState(null, "", location.href);
+  }
+  if (typeof closeSidePanel === 'function') closeSidePanel(true);
+
   // Save scroll position of current view before switching
   const currentView = getActiveView();
   saveViewScrollPosition(currentView);
 
   const targetView = document.getElementById(viewId);
+  targetView.classList.remove("side-sheet", "sheet-left", "sheet-right", "sheet-visible", "sheet-closing");
+  targetView.style.transform = "";
+  targetView.style.transition = "";
   targetView.classList.remove("hidden");
   document.getElementById("playerContainer").classList.add("hidden");
   history.pushState({ view: viewId }, "", location.href);
@@ -86,6 +97,12 @@ function closeActiveView() {
   // Close any open context menu
   const openMenu = document.querySelector(".context-menu");
   if (openMenu) openMenu.remove();
+
+  // A side sheet is a transient overlay on top of the player (or of
+  // a full-page view) — dismiss it first and leave the rest alone
+  if (typeof closeSidePanel === 'function' && closeSidePanel()) {
+    return;
+  }
 
   const view = getActiveView();
   if (view) {
@@ -110,6 +127,19 @@ window.addEventListener("popstate", (e) => {
   // Close any open context menu
   const openMenu = document.querySelector(".context-menu");
   if (openMenu) openMenu.remove();
+
+  // Side sheets push their own history entries — handle them first
+  const openSheetId = (typeof getSidePanelView === 'function') ? getSidePanelView() : null;
+  if (e.state && e.state.sidePanel) {
+    if (openSheetId !== e.state.sidePanel && typeof openSidePanel === 'function') {
+      openSidePanel(e.state.sidePanel, true);
+    }
+    return;
+  }
+  if (openSheetId && typeof closeSidePanel === 'function') {
+    closeSidePanel(false, true);
+    if (!(e.state && e.state.view)) return;
+  }
 
   const activeView = getActiveView();
 
@@ -1239,7 +1269,7 @@ async function addDirectoryToExternalStorage(dirHandle) {
     if (typeof renderStorage === 'function') {
         renderStorage();
     }
-    if (confirm(`External directory "${name}" added.\nDo you want to play now`)) {
+    if (await glassConfirm(`External directory "${name}" added.\nDo you want to play now`)) {
       addDirectoryToPlaylist(await loadExternalDirs(), "external_storage", "external", name, null);
     }
 }
@@ -1786,10 +1816,10 @@ subtitleBtn.onclick = async () => {
   }
 };
 
-webBtn.onclick = () => {
+webBtn.onclick = async () => {
   const t = (key, params) => window.i18n ? window.i18n.t(key, params) : key;
   try {
-    const url = prompt(t('enterWebURL', "Enter web URL:"));
+    const url = await glassPrompt(t('enterWebURL', "Enter web URL:"));
 
     if (url)
     {
@@ -2287,13 +2317,30 @@ document.addEventListener("keydown", (e) => {
   }
 
   const activeView = getActiveView();
+  const isSheet = activeView && activeView.classList.contains("side-sheet");
 
-  if (activeView &&
+  if (activeView && !isSheet &&
       activeView != document.getElementById("nowPlayingView")) {
     return;
   }
 
-  if (activeView) {
+  // A side sheet floats over the player — playback shortcuts still work;
+  // Escape just dismisses the sheet. Keys aimed at a control inside the
+  // sheet (e.g. typing in the IPTV search box) go to it instead.
+  if (isSheet) {
+    if (e.code === "Escape") {
+      closeActiveView();
+      isKeyDown = true;
+      return;
+    }
+    const t = e.target;
+    if (t && t !== document.body && activeView.contains(t) &&
+        t.closest("button, input, select, textarea, a[href], [contenteditable]")) {
+      return;
+    }
+  }
+
+  if (activeView && !isSheet) {
     if (e.code === "Escape") {
       closeActiveView();
     }

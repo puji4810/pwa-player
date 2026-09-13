@@ -391,11 +391,11 @@ function removeFromNowPlaying(index) {
     renderNowPlayingQueue();
 }
 
-function confirmRemoveFromNowPlaying(index) {
+async function confirmRemoveFromNowPlaying(index) {
     const queue = getActiveQueue();
     const entry = queue[index];
 
-    const ok = confirm(`Remove "${entry.name || entry.path}" from the queue?`);
+    const ok = await glassConfirm(`Remove "${entry.name || entry.path}" from the queue?`);
     if (!ok) return;
 
     removeFromNowPlaying(index);
@@ -420,6 +420,7 @@ function showNowPlayingItemMenu(index, button) {
         menuHtml += `<div class="menu-item" data-action="copy-url">${t('copyUrl', 'Copy URL')}</div>`;
     }
     menuHtml += `
+        <div class="menu-item" data-action="add-to-playlist">${t('addToPlaylist', 'Add to Playlist')}</div>
         <div class="menu-item danger" data-action="remove">${t('removeFromQueue', 'Remove from Queue')}</div>
         <div class="menu-item" data-action="properties">${t('properties', 'Properties')}</div>
         <div class="menu-item" data-action="close">${t('close', 'Close')}</div>
@@ -470,8 +471,16 @@ function showNowPlayingItemMenu(index, button) {
                 return;
             }
 
+            if (action === "add-to-playlist") {
+                // Allow picking the source playlist too — the dedup check
+                // inside reports "already in playlist" instead of hiding it
+                await addEntryToPlaylistPrompt(entry, null);
+                closeMenu();
+                return;
+            }
+
             if (action === "remove") {
-                confirmRemoveFromNowPlaying(index);
+                await confirmRemoveFromNowPlaying(index);
             }
 
             if (action === "properties") {
@@ -641,7 +650,16 @@ function renderNowPlayingQueue() {
 
         // Add playing indicator if this is the current track
         const playingIndicator = isCurrentTrack ? icon('play') + ' ' : '';
-        titleSpan.innerHTML = `${playingIndicator}${escapeHTML(entry.name || entry.path)}${imageBadge}${badgesHtml}`;
+
+        // Small badge showing which saved playlist this entry came from
+        const sourceBadge = entry.playlistName
+            ? `<span class="iptv-badge np-src-badge" title="${escapeHTML(entry.playlistName)}">${icon('musicList')}<span class="np-src-name">${escapeHTML(entry.playlistName)}</span></span>`
+            : '';
+
+        // Name truncates with ellipsis; badges never shrink or clip
+        titleSpan.innerHTML =
+            `<span class="np-item-name">${playingIndicator}${escapeHTML(entry.name || entry.path)}</span>` +
+            `<span class="np-item-badges">${imageBadge}${badgesHtml}${sourceBadge}</span>`;
 
         // Click on title → play
         titleSpan.addEventListener("click", () => {

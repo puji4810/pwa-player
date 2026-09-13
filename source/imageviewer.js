@@ -443,7 +443,7 @@ function handleZoomedImageClick(event) {
     imageElement.style.transformOrigin = `${xPercent}% ${yPercent}%`;
 }
 
-function handleNextWithLoopCheck() {
+async function handleNextWithLoopCheck() {
     const pos = getImageQueuePosition();
     if (!pos) {
         if (typeof playNext === 'function') playNext();
@@ -451,7 +451,7 @@ function handleNextWithLoopCheck() {
     }
     if (pos.index >= pos.total) {
         const t = (key) => window.i18n ? window.i18n.t(key) : key;
-        if (confirm(t('loopToFirstImage', 'Jump back to first image?'))) {
+        if (await glassConfirm(t('loopToFirstImage', 'Jump back to first image?'))) {
             jumpToImageIndex(0);
         }
         return;

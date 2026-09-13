@@ -78,6 +78,10 @@ const ZHCN_TRANSLATIONS = {
 
     // Playlist
     addToPlaylist: "添加到播放列表",
+    addToQueue: "添加到队列",
+    addedToQueue: "已添加到队列",
+    noOtherPlaylists: "没有其他播放列表。",
+    alreadyInPlaylist: "{name} 已在播放列表 {playlist} 中",
     newPlaylist: "新建播放列表",
     whichPlaylist: "添加到哪个播放列表？",
     playKeepPanel: "播放（保持面板打开）",
@@ -169,6 +173,13 @@ const ZHCN_TRANSLATIONS = {
     compact: "紧凑",
     normal: "标准",
     large: "大",
+    sidePanel: "侧边悬浮栏",
+    sidePanelLeft: "左侧",
+    sidePanelRight: "右侧",
+    sidePanelOff: "关闭",
+    sidePanelHint: "鼠标悬停屏幕边缘，或从屏幕边缘向内滑动，即可唤出悬浮栏——无需离开播放器即可打开正在播放、播放列表、存储管理、电视频道和播放设置。",
+    backToPlayer: "返回播放器",
+    showControls: "显示控制栏",
     keyboardShortcuts: "键盘快捷键",
     shortcutSpeedEnabled: "A/D/S - 速度控制",
     shortcutLoopEnabled: "J/K/L - A-B循环",
@@ -230,6 +241,7 @@ const ZHCN_TRANSLATIONS = {
     // Common
     close: "关闭",
     cancel: "取消",
+    ok: "好",
     removeFromQueue: "从队列中移除",
     confirm: "确认",
     yes: "是",
