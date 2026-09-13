@@ -759,6 +759,7 @@ async function play_source_internal(blobURL, mediametadata, sourceobject, playli
       videoSrc = applyCorsBypass(blobURL, corsBypass);
     }
 
+    video.srcObject = null;
     video.src = videoSrc;
     hasActiveSource = true;
     hideControls();
@@ -976,6 +977,7 @@ function tryPlayUrl(url, title, corsBypass, maxRetries, sourceNum, totalSources)
       videoSrc = applyCorsBypass(url, corsBypass);
     }
 
+    video.srcObject = null;
     video.src = videoSrc;
     hasActiveSource = true;
     hideControls();
@@ -1269,6 +1271,7 @@ npPlayBtn.onclick = togglePlayBtn;
 function clearVideoSource() {
   video.pause();
   video.currentTime = 0;
+  video.srcObject = null;
   video.removeAttribute("src");
   video.load();
   hasActiveSource = false;
@@ -1284,6 +1287,7 @@ async function toggleStopBtn()
     stopSkip(true);
     video.pause();
     video.currentTime = 0;
+    video.srcObject = null;
     video.removeAttribute("src");
     video.load();
     hasActiveSource = false;

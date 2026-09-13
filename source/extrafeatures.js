@@ -100,7 +100,9 @@ function getSwitchCaptureBtn() {
     return switchCaptureBtn;
 }
 
-// Draw captured video to canvas continuously
+// Draw captured video to canvas continuously.
+// setInterval keeps running (throttled) when the tab is hidden —
+// requestAnimationFrame would pause entirely and freeze the recording
 function drawCaptureToCanvas() {
     if (!captureCtx || !currentCaptureVideo) return;
 
@@ -115,8 +117,6 @@ function drawCaptureToCanvas() {
         }
         captureCtx.drawImage(currentCaptureVideo, 0, 0, vw, vh);
     }
-
-    captureAnimationId = requestAnimationFrame(drawCaptureToCanvas);
 }
 
 screenCaptureBtn.addEventListener("click", async () => {
@@ -141,8 +141,8 @@ screenCaptureBtn.addEventListener("click", async () => {
         currentCaptureVideo.muted = true;
         await currentCaptureVideo.play();
 
-        // Start drawing to canvas
-        drawCaptureToCanvas();
+        // Start drawing to canvas (~30fps, survives tab being hidden)
+        captureAnimationId = setInterval(drawCaptureToCanvas, 33);
 
         // Set up AudioContext for mixing
         audioContext = new AudioContext();
@@ -305,9 +305,9 @@ async function switchCaptureSource() {
 }
 
 function cleanupCaptureResources() {
-    // Stop animation loop
+    // Stop draw loop
     if (captureAnimationId) {
-        cancelAnimationFrame(captureAnimationId);
+        clearInterval(captureAnimationId);
         captureAnimationId = null;
     }
 
@@ -319,6 +319,13 @@ function cleanupCaptureResources() {
 
     captureCanvas = null;
     captureCtx = null;
+
+    // Release the capture stream from the main video element —
+    // srcObject takes precedence over src, so leaving it set would
+    // block all subsequent playback
+    if (video) {
+        video.srcObject = null;
+    }
 
     if (micStream) {
         micStream.getTracks().forEach(track => track.stop());
@@ -361,6 +368,11 @@ if (switchBtnImmediate) {
 
 function saveScreenRecording() {
     const blob = new Blob(screenChunks, { type: "video/webm" });
+    screenChunks = [];
+    screenRecorder = null;
+    if (blob.size === 0) {
+        return;
+    }
     const filename = `screen-recording-${Date.now()}.webm`;
     if (typeof saveFileToConfiguredLocation === 'function') {
         saveFileToConfiguredLocation('screenRecording', blob, filename);
@@ -399,9 +411,15 @@ function stopScreenRecording() {
     // Clear recording start time
     screenRecordingStartTime = null;
 
-    if (screenRecorder && screenRecorder.state === "recording") {
-        screenRecorder.requestData();
-        screenRecorder.stop();
+    if (screenRecorder) {
+        if (screenRecorder.state === "recording") {
+            screenRecorder.requestData();
+            screenRecorder.stop();
+        } else {
+            // Recorder already stopped (e.g. stream ended externally) —
+            // save whatever was captured instead of dropping it
+            saveScreenRecording();
+        }
     }
 
     cleanupCaptureResources();
@@ -492,6 +510,7 @@ function fallbackDownload(blob, filename) {
     a.download = filename;
     a.click();
     setTimeout(() => URL.revokeObjectURL(url), 10000);
+    if (typeof showToast === 'function') showToast(filename);
 }
 
 // Start recording the <video> element

@@ -3567,6 +3567,7 @@ async function saveFileToConfiguredLocation(type, blob, filename) {
             const folder = config.path || `idb_${Date.now()}`;
             await idb_putFile(folder, filename, blob, blob.type);
             if (typeof renderStorage === 'function') renderStorage();
+            if (typeof showToast === 'function') showToast(filename);
             return true;
         }
 
@@ -3611,6 +3612,7 @@ async function saveFileToConfiguredLocation(type, blob, filename) {
         }
 
         if (typeof renderStorage === 'function') renderStorage();
+        if (typeof showToast === 'function') showToast(filename);
         return true;
     } catch (err) {
         console.warn(`Failed to save to configured location (${type}):`, err);
