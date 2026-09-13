@@ -1402,6 +1402,14 @@ function performSkip(direction, pressDuration = 0) {
 }
 
 function startSkip(direction) {
+    // Clear any existing skip timer first — repeated pointerdown (multi-touch,
+    // lost pointerup, fast re-press) must never stack intervals
+    if (skipIntervalId) {
+        clearTimeout(skipIntervalId);
+        clearInterval(skipIntervalId);
+        skipIntervalId = null;
+    }
+
     skipDirection = direction;
     skipPressStartTime = Date.now();
     window.pendingSeekTarget = null;
@@ -1411,6 +1419,9 @@ function startSkip(direction) {
     let getactiveaction = getActiveDuration();
     if (!getactiveaction || Number.isNaN(getactiveaction))
     {
+      skipDirection = 0;
+      skipPressStartTime = 0;
+      window.hasControlsPointerActivity = false;
       return;
     }
     // Initial visual update (no seek)
@@ -1469,6 +1480,7 @@ function setupSkipButton(btn, direction) {
     btn.addEventListener('pointerup', stopSkipPointer);
     btn.addEventListener('pointerleave', stopSkipPointer);
     btn.addEventListener('pointercancel', stopSkipPointer);
+    btn.addEventListener('lostpointercapture', stopSkipPointer);
 }
 
 setupSkipButton(skipBackBtn, -1);
