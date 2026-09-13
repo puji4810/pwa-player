@@ -51,6 +51,7 @@
         folder: S('<path d="M3 7a2 2 0 0 1 2-2h4.2L11.5 7H19a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>'),
         file: S('<path d="M6.5 3h7l4 4v13a1.5 1.5 0 0 1-1.5 1.5h-9.5A1.5 1.5 0 0 1 5 20V4.5A1.5 1.5 0 0 1 6.5 3z"/><path d="M13.5 3v4.5H18"/>'),
         archive: S('<rect x="3" y="4" width="18" height="4.5" rx="1.2"/><path d="M5 8.5V18a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8.5"/><path d="M10 12.5h4"/>'),
+        harddrive: S('<path d="M5.5 4.5h13a2 2 0 0 1 2 1.7l1.8 8.8H1.7l1.8-8.8a2 2 0 0 1 2-1.7z"/><rect x="2" y="14" width="20" height="5.5" rx="1.5"/><path d="M17.5 17h.01" stroke-width="2.6"/>'),
         photo: S('<rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M4.5 17l4.5-4.5 3 3 4-4 3.5 3.5"/>'),
         video: S('<rect x="3" y="6.5" width="12.5" height="11" rx="2"/><path d="M15.5 10.5l4.5-2.8v8.6l-4.5-2.8"/>'),
         film: S('<rect x="3" y="4.5" width="18" height="15" rx="2"/><path d="M3 9.5h18"/><path d="M8 4.5l3 5"/><path d="M13.5 4.5l3 5"/>'),
@@ -93,7 +94,15 @@
 
     window.setIcon = function (el, name) {
         if (!el) return;
-        el.innerHTML = window.icon(name);
+        const svg = window.icon(name);
+        const existing = el.querySelector(":scope > svg.icon");
+        if (existing) {
+            existing.outerHTML = svg;
+        } else if (el.childNodes.length) {
+            el.insertAdjacentHTML("afterbegin", svg);
+        } else {
+            el.innerHTML = svg;
+        }
         el.dataset.icon = name;
     };
 
