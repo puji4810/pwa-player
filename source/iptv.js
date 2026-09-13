@@ -362,7 +362,7 @@ function renderChannel(channel, searchFilter, isCustom, customIndex) {
     // Build the toggle content
     const toggleText = document.createElement("span");
     toggleText.className = "iptv-toggle-text";
-    toggleText.textContent = "+";
+    toggleText.innerHTML = icon("chevronRight");
 
     if (urlList.length > 1) {
         const countBadge = document.createElement("span");
@@ -371,7 +371,7 @@ function renderChannel(channel, searchFilter, isCustom, customIndex) {
         expandBtn.appendChild(toggleText);
         expandBtn.appendChild(countBadge);
     } else {
-        expandBtn.textContent = "+";
+        expandBtn.innerHTML = icon("chevronRight");
     }
 
     const nameSpan = document.createElement("span");
@@ -427,7 +427,7 @@ function renderChannel(channel, searchFilter, isCustom, customIndex) {
     // Menu button (⋮)
     const menuBtn = document.createElement("button");
     menuBtn.className = "iptv-menu";
-    menuBtn.textContent = "⋮";
+    setIcon(menuBtn, "ellipsisV");
     menuBtn.title = "Menu";
     menuBtn.addEventListener("click", (e) => {
         e.stopPropagation();
@@ -489,7 +489,7 @@ function renderChannel(channel, searchFilter, isCustom, customIndex) {
         // Menu button for this URL
         const addBtn = document.createElement("button");
         addBtn.className = "iptv-sub-menu";
-        addBtn.textContent = "⋮";
+        setIcon(addBtn, "ellipsisV");
         addBtn.title = "Menu";
         addBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -509,10 +509,11 @@ function renderChannel(channel, searchFilter, isCustom, customIndex) {
     // Click on + expands/collapses
     expandBtn.addEventListener("click", () => {
         const hidden = subList.classList.toggle("hidden");
+        const chevron = hidden ? "chevronRight" : "chevronDown";
         if (urlList.length > 1) {
-            expandBtn.querySelector(".iptv-toggle-text").textContent = hidden ? "+" : "−";
+            setIcon(expandBtn.querySelector(".iptv-toggle-text"), chevron);
         } else {
-            expandBtn.textContent = hidden ? "+" : "−";
+            setIcon(expandBtn, chevron);
         }
     });
 

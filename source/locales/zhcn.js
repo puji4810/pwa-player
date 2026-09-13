@@ -1,13 +1,13 @@
 // Chinese (Simplified) translations
 const ZHCN_TRANSLATIONS = {
     // Navigation
-    nowPlaying: "▶️ 正在播放",
-    playlist: "🎵 播放列表",
-    playlists: "🎵 播放列表",
-    storage: "🗂️ 存储",
-    iptv: "📺 网络电视",
-    settings: "⚙️ 设置",
-    storageManager: "🗂️ 存储管理",
+    nowPlaying: "正在播放",
+    playlist: "播放列表",
+    playlists: "播放列表",
+    storage: "存储",
+    iptv: "网络电视",
+    settings: "设置",
+    storageManager: "存储管理",
 
     // Player controls
     play: "播放",
@@ -109,7 +109,7 @@ const ZHCN_TRANSLATIONS = {
     playlistLoadError: "加载播放列表出错",
 
     // IPTV
-    iptvChannels: "📺 网络电视频道",
+    iptvChannels: "网络电视频道",
     searchChannels: "搜索频道...",
     iptvCorsHint: "IP地址始终需要CORS绕过。HTTP URL通常需要CORS。HTTPS通常不需要CORS。如果频道无法播放，请尝试启用CORS绕过。",
     import: "导入",
@@ -342,9 +342,9 @@ const ZHCN_TRANSLATIONS = {
     screenshotFailed: "无法截图。视频源可能是跨域或未启用CORS。",
     saveLocations: "保存位置",
     saveLocationsHint: "配置屏幕录制、视频录制和截图的保存位置。通过存储目录右键菜单设置。",
-    screenRecordingLocationLabel: "📹 屏幕录制：",
-    videoRecordingLocationLabel: "🎬 视频录制：",
-    screenshotLocationLabel: "🖼️ 截图：",
+    screenRecordingLocationLabel: "屏幕录制：",
+    videoRecordingLocationLabel: "视频录制：",
+    screenshotLocationLabel: "截图：",
     noLocationSet: "未设置（下载到浏览器默认位置）",
     clearScreenRecordingLocation: "清除屏幕录制",
     clearVideoRecordingLocation: "清除视频录制",

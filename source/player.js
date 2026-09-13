@@ -469,7 +469,7 @@ function clearSubtitles() {
     if (t.src.startsWith('blob:')) URL.revokeObjectURL(t.src);
     t.remove();
   });
-  subtitleBtn.textContent = '📝';
+  setIcon(subtitleBtn, 'subtitles');
   // Restore original metadata without subtitle text, but preserve artwork if set
   if (currentMediaMetadata) {
     const metadata = {
@@ -486,13 +486,13 @@ function clearSubtitles() {
 
 function updateTimeDisplay(txtct)
 {
-  // Check for screen recording (show elapsed time with 🖥️ icon)
+  // Check for screen recording (show elapsed time with monitor icon)
   if (typeof window.getScreenRecordingElapsedTime === 'function') {
     const screenElapsed = window.getScreenRecordingElapsedTime();
     if (screenElapsed !== null) {
       const elapsedStr = window.formatRecordingTimeShort(screenElapsed);
       if (!window.timeInputActive) {
-        timeDisplay.textContent = `🖥️ ${elapsedStr}`;
+        timeDisplay.innerHTML = `${icon('monitor')} ${elapsedStr}`;
       }
       if (!window.npTimeInputActive) {
         npTimeDisplay.textContent = txtct; // npTimeDisplay shows normal time
@@ -512,18 +512,23 @@ function updateTimeDisplay(txtct)
     return;
   }
 
-  // Check for video recording (append elapsed time with ⏺️ icon)
+  // Check for video recording (append elapsed time with record icon)
   let finalText = txtct;
+  let finalHtml = null;
   if (typeof window.getVideoRecordingElapsedTime === 'function') {
     const videoElapsed = window.getVideoRecordingElapsedTime();
     if (videoElapsed !== null) {
       const elapsedStr = window.formatRecordingTimeShort(videoElapsed);
-      finalText = `${txtct} ⏺️ ${elapsedStr}`;
+      finalHtml = `${txtct} ${icon('record', 'rec')} ${elapsedStr}`;
     }
   }
 
   if (!window.timeInputActive) {
-    timeDisplay.textContent = finalText;
+    if (finalHtml !== null) {
+      timeDisplay.innerHTML = finalHtml;
+    } else {
+      timeDisplay.textContent = finalText;
+    }
   }
   if (!window.npTimeInputActive) {
     npTimeDisplay.textContent = txtct; // npTimeDisplay shows normal time without recording indicator
@@ -829,8 +834,8 @@ async function play_source_internal(blobURL, mediametadata, sourceobject, playli
     // Ensure video loads the new source
     video.load();
 
-    playBtn.textContent = "⏸️";
-    npPlayBtn.textContent = playBtn.textContent;
+    setIcon(playBtn, "pause");
+    setIcon(npPlayBtn, playBtn.dataset.icon);
 
     // Store original metadata for subtitle updates
     currentMediaMetadata = { ...mediametadata };
@@ -849,7 +854,7 @@ async function play_source_internal(blobURL, mediametadata, sourceobject, playli
       artist: mediametadata.artist || '',
       album: mediametadata.album || ''
     });
-    document.title = `PWA Player ▶️ ${displayTitle}`;
+    document.title = `PWA Player — ${displayTitle}`;
 
     const entry = {
       name: displayTitle,
@@ -1052,11 +1057,11 @@ function tryPlayUrl(url, title, corsBypass, maxRetries, sourceNum, totalSources)
     video.load();
 
     // Update UI
-    playBtn.textContent = "⏸️";
-    npPlayBtn.textContent = playBtn.textContent;
+    setIcon(playBtn, "pause");
+    setIcon(npPlayBtn, playBtn.dataset.icon);
     currentMediaMetadata = { title };
     navigator.mediaSession.metadata = new MediaMetadata({ title });
-    document.title = `PWA Player ▶️ ${title}`;
+    document.title = `PWA Player — ${title}`;
 
     updateNowPlayingInfo({ name: title, path: url });
   });
@@ -1246,8 +1251,8 @@ async function togglePlayBtn()
     // If a video is already loaded and playable → toggle play/pause
     if (hasActiveSource && video.readyState >= 3 && !video.ended) {
         video.paused ? video.play() : video.pause();
-        playBtn.textContent = video.paused ? "▶️" : "⏸️";
-        npPlayBtn.textContent = playBtn.textContent;
+        setIcon(playBtn, video.paused ? "play" : "pause");
+        setIcon(npPlayBtn, playBtn.dataset.icon);
         return;
     }
     // No active source or video ended → try to restore or play default playlist
@@ -1285,8 +1290,8 @@ async function toggleStopBtn()
     clearVideoPreview();
     revokeBlobURL();
     currentMediaMetadata = null;
-    playBtn.textContent = "▶️";
-    npPlayBtn.textContent = playBtn.textContent;
+    setIcon(playBtn, "play");
+    setIcon(npPlayBtn, "play");
     // Clear subtitles
     clearSubtitles();
     hideAudioCover();
@@ -1677,7 +1682,7 @@ async function loadSubtitle(file) {
       }
   };
 
-  subtitleBtn.textContent = '✅';
+  setIcon(subtitleBtn, 'subtitlesOn');
 }
 
 // Expose loadSubtitle globally for storage.js to use
@@ -1690,13 +1695,13 @@ subtitleBtn.onclick = async () => {
     const track = tracks[0];
     if (track.mode === 'showing') {
       track.mode = 'hidden';
-      subtitleBtn.textContent = '📝';
+      setIcon(subtitleBtn, 'subtitles');
       // Restore original metadata when hiding subtitles
       updateMediaSessionSubtitle('');
       return;
     } else {
       track.mode = 'showing';
-      subtitleBtn.textContent = '✅';
+      setIcon(subtitleBtn, 'subtitlesOn');
       return;
     }
   }
@@ -1789,7 +1794,7 @@ function volumeSliderInput(objVolumeSlider)
   const percent = parseInt(objVolumeSlider.value, 10); // raw percent
   const normalized = Math.min(1, Math.max(0, percent / 100));
 
-  if (volumeToggleBtn.textContent.trim() === "🔊") {
+  if (volumeToggleBtn.dataset.icon === "volume") {
     player.volume = normalized;
   }
 }
@@ -1827,16 +1832,16 @@ npVolumeSlider.addEventListener("pointercancel", () => {
 
 function volumeToggleBtnClick()
 {
-  if (volumeToggleBtn.textContent.trim() === "🔊") {
+  if (volumeToggleBtn.dataset.icon === "volume") {
     video.volume = 0;
-    volumeToggleBtn.textContent = "🔇";
+    setIcon(volumeToggleBtn, "volumeOff");
   } else {
     const percent = parseInt(volumeSlider.value, 10); // raw percent
     const normalized = Math.min(1, Math.max(0, percent / 100));
     player.volume = normalized;
-    volumeToggleBtn.textContent = "🔊";
+    setIcon(volumeToggleBtn, "volume");
   }
-  npVolumeToggleBtn.textContent = volumeToggleBtn.textContent;
+  setIcon(npVolumeToggleBtn, volumeToggleBtn.dataset.icon);
 }
 
 // Toggle visibility on button click

@@ -1929,9 +1929,9 @@ function showSaveLocationSubMenu(entry, dirName, parentButton) {
     menu.className = "context-menu";
 
     const menuItems = [
-        `<div class="menu-item" data-type="screenRecording">📹 ${t('screenRecordingSaveLocation', 'Screen Recording')}</div>`,
-        `<div class="menu-item" data-type="videoRecording">🎬 ${t('videoRecordingSaveLocation', 'Video Recording')}</div>`,
-        `<div class="menu-item" data-type="screenshot">🖼️ ${t('screenshotSaveLocation', 'Screenshot')}</div>`,
+        `<div class="menu-item" data-type="screenRecording">${icon("video")} ${t('screenRecordingSaveLocation', 'Screen Recording')}</div>`,
+        `<div class="menu-item" data-type="videoRecording">${icon("film")} ${t('videoRecordingSaveLocation', 'Video Recording')}</div>`,
+        `<div class="menu-item" data-type="screenshot">${icon("photo")} ${t('screenshotSaveLocation', 'Screenshot')}</div>`,
         `<div class="menu-item" data-action="close">${t('close', 'Close')}</div>`
     ];
 
@@ -2028,7 +2028,7 @@ function showStorageFileMenu(entry, name, handle, fullPath, button) {
         menuItems.push(`<div class="menu-item" data-action="add">${t('addToPlaylist', 'Add to Playlist')}</div>`);
     }
     if (isSubtitle) {
-        menuItems.push(`<div class="menu-item" data-action="load-subtitle">📝 ${t('loadSubtitles', 'Load Subtitles')}</div>`);
+        menuItems.push(`<div class="menu-item" data-action="load-subtitle">${icon("subtitles")} ${t('loadSubtitles', 'Load Subtitles')}</div>`);
     }
     menuItems.push(`<div class="menu-item" data-action="export">${t('export', 'Export')}</div>`);
     menuItems.push(`<div class="menu-item" data-action="share">${t('share', 'Share')}</div>`);
@@ -2380,11 +2380,11 @@ function renderFileItem(subList, name, handle, entry, currentPath = "") {
 
     li.innerHTML = `
         <div class="storage-file-header">
-            <span class="file-name">📄 ${escapeHTML(name)}</span>
+            <span class="file-name">${icon("file")} ${escapeHTML(name)}</span>
             <div class="file-actions">
-                ${isPlayable ? '<button class="file-play" title="Play">▶</button>' : ''}
-                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">📝</button>' : ''}
-                <button class="file-menu" title="Menu">⋮</button>
+                ${isPlayable ? '<button class="file-play" title="Play">${icon("play")}</button>' : ''}
+                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>' : ''}
+                <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>
     `;
@@ -2458,11 +2458,11 @@ function renderIndexedDBFileItem(subList, name, fileEntry, entry, folderPath = "
 
     li.innerHTML = `
         <div class="storage-file-header">
-            <span class="file-name">📄 ${escapeHTML(name)}</span>
+            <span class="file-name">${icon("file")} ${escapeHTML(name)}</span>
             <div class="file-actions">
-                ${isPlayable ? '<button class="file-play" title="Play">▶</button>' : ''}
-                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">📝</button>' : ''}
-                <button class="file-menu" title="Menu">⋮</button>
+                ${isPlayable ? '<button class="file-play" title="Play">${icon("play")}</button>' : ''}
+                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>' : ''}
+                <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>
     `;
@@ -2534,7 +2534,7 @@ function showIndexedDBFileMenu(entry, name, fileEntry, button, folderPath = "") 
         menuItems.push(`<div class="menu-item" data-action="add">${t('addToPlaylist', 'Add to Playlist')}</div>`);
     }
     if (isSubtitle) {
-        menuItems.push(`<div class="menu-item" data-action="load-subtitle">📝 ${t('loadSubtitles', 'Load Subtitles')}</div>`);
+        menuItems.push(`<div class="menu-item" data-action="load-subtitle">${icon("subtitles")} ${t('loadSubtitles', 'Load Subtitles')}</div>`);
     }
     menuItems.push(`<div class="menu-item" data-action="export">${t('export', 'Export')}</div>`);
     menuItems.push(`<div class="menu-item" data-action="share">${t('share', 'Share')}</div>`);
@@ -2748,9 +2748,9 @@ function renderSubdirItem(subList, name, handle, parentHandle, entry, currentPat
 
     li.innerHTML = `
         <div class="storage-sub-header">
-            <span class="sub-name">📁 ${escapeHTML(name)}</span>
+            <span class="sub-name">${icon("folder")} ${escapeHTML(name)}</span>
             <div class="sub-actions">
-                <button class="sub-menu" title="Menu">⋮</button>
+                <button class="sub-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>
     `;
@@ -2980,9 +2980,9 @@ async function renderStorage() {
 
         li.innerHTML = `
             <div class="storage-header">
-                <button class="toggle">+</button>
+                <button class="toggle">${icon("chevronRight")}</button>
                 <span class="storage-name">${displayRootName}</span>
-                <button class="storage-menu" title="Menu">⋮</button>
+                <button class="storage-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
             <ul class="storage-sub hidden"></ul>
         `;
@@ -2996,7 +2996,7 @@ async function renderStorage() {
         header.addEventListener("click", (e) => {
             if (e.target === menuBtn) return;
             const hidden = subList.classList.toggle("hidden");
-            toggleBtn.textContent = hidden ? "+" : "−";
+            setIcon(toggleBtn, hidden ? "chevronRight" : "chevronDown");
             if (!hidden) loadStorageSubdirs(subList, rootDir, entry);
         });
 

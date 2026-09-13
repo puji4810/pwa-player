@@ -304,20 +304,20 @@ class YouTubePlatform extends BasePlatform {
         const npPlayBtn = document.getElementById("npPlayBtn");
 
         if (event.data === YT.PlayerState.PLAYING) {
-            if (playBtn) playBtn.textContent = "⏸️";
-            if (npPlayBtn) npPlayBtn.textContent = "⏸️";
+            if (playBtn) setIcon(playBtn, "pause");
+            if (npPlayBtn) setIcon(npPlayBtn, "pause");
             navigator.mediaSession.playbackState = 'playing';
 
             if (!this.progressInterval) {
                 this.startProgressUpdates(() => this.updateProgress());
             }
         } else if (event.data === YT.PlayerState.PAUSED) {
-            if (playBtn) playBtn.textContent = "▶️";
-            if (npPlayBtn) npPlayBtn.textContent = "▶️";
+            if (playBtn) setIcon(playBtn, "play");
+            if (npPlayBtn) setIcon(npPlayBtn, "play");
             navigator.mediaSession.playbackState = 'paused';
         } else if (event.data === YT.PlayerState.ENDED) {
-            if (playBtn) playBtn.textContent = "▶️";
-            if (npPlayBtn) npPlayBtn.textContent = "▶️";
+            if (playBtn) setIcon(playBtn, "play");
+            if (npPlayBtn) setIcon(npPlayBtn, "play");
             navigator.mediaSession.playbackState = 'paused';
 
             this.stopProgressUpdates();

@@ -189,7 +189,7 @@ screenCaptureBtn.addEventListener("click", async () => {
         if (micBtn) micBtn.style.display = "";
         const switchBtn = getSwitchCaptureBtn();
         if (switchBtn) switchBtn.style.display = "";
-        screenCaptureBtn.textContent = "⏹️";
+        setIcon(screenCaptureBtn, "stop");
 
         // Ask user if they want to enable microphone
         const t = (key) => window.i18n ? window.i18n.t(key) : key;
@@ -226,7 +226,7 @@ async function toggleMicInRecording() {
             micGainNode.gain.value = 0;
         }
         isMicEnabled = false;
-        if (micBtn) micBtn.textContent = "🎤";
+        if (micBtn) setIcon(micBtn, "mic");
     } else {
         // Turn on mic
         try {
@@ -239,7 +239,7 @@ async function toggleMicInRecording() {
             }
             micGainNode.gain.value = 1;
             isMicEnabled = true;
-            if (micBtn) micBtn.textContent = "🎙️";
+            if (micBtn) setIcon(micBtn, "micOn");
         } catch (micErr) {
             console.warn("Could not get microphone:", micErr);
             alert("Could not access microphone.");
@@ -408,11 +408,11 @@ function stopScreenRecording() {
 
     video.muted = previousVideoMuted;
 
-    screenCaptureBtn.textContent = "🖥️";
+    setIcon(screenCaptureBtn, "monitor");
     const micBtn = getMicToggleBtn();
     if (micBtn) {
         micBtn.style.display = "none";
-        micBtn.textContent = "🎤";
+        setIcon(micBtn, "mic");
     }
     const switchBtn = getSwitchCaptureBtn();
     if (switchBtn) {
@@ -429,8 +429,8 @@ if (navigator.getBattery) {
     navigator.getBattery().then(battery => {
         const updateBattery = () => {
             const level = Math.round(battery.level * 100);
-            const charging = battery.charging ? "⚡" : "";
-            batteryStatus.textContent = `🔋 ${level}%${charging}`;
+            const charging = battery.charging ? icon("bolt") : "";
+            batteryStatus.innerHTML = `${icon("battery")} ${level}%${charging}`;
         };
 
         updateBattery();
@@ -441,7 +441,7 @@ if (navigator.getBattery) {
         console.error("Battery API error:", e);
     });
 } else {
-    batteryStatus.textContent = "🔋 n/a";
+    batteryStatus.innerHTML = `${icon("battery")} n/a`;
 }
 
 
@@ -549,7 +549,7 @@ function startVideoRecording() {
 
     // Use timeslice for better file integrity
     mediaRecorder.start(1000);
-    mediaRecordBtn.textContent = "⏹️";
+    setIcon(mediaRecordBtn, "stop");
     alert(t('recordingStarted') || "Recording started.");
 }
 
@@ -577,7 +577,7 @@ function stopVideoRecording() {
         mediaRecorder.requestData();
         mediaRecorder.stop();
     }
-    mediaRecordBtn.textContent = "⏺️";
+    setIcon(mediaRecordBtn, "record");
     alert(t('recordingStopped') || "Recording stopped.");
 }
 
@@ -596,7 +596,7 @@ mediaRecordBtn.addEventListener("click", () => {
         videoRecordingStartTime = Date.now();
 
         mediaRecorder.start(1000);
-        mediaRecordBtn.textContent = "⏹️";
+        setIcon(mediaRecordBtn, "stop");
         alert(t('recordingStarted') || "Recording started.");
     }
 });
@@ -711,20 +711,20 @@ const connection = navigator.connection || navigator.mozConnection || navigator.
 
 function updateNetwork() {
     if (!connection) {
-        networkStatus.textContent = "🌐 n/a";
+        networkStatus.innerHTML = `${icon("globe")} n/a`;
         return;
     }
 
     const type = connection.effectiveType || "unknown";
     const down = connection.downlink ? `${connection.downlink}Mbps` : "";
-    networkStatus.textContent = `🌐 ${type} ${down}`.trim();
+    networkStatus.innerHTML = `${icon("globe")} ${type} ${down}`.trim();
 }
 
 if (connection) {
     updateNetwork();
     connection.addEventListener("change", updateNetwork);
 } else {
-    networkStatus.textContent = "🌐 n/a";
+    networkStatus.innerHTML = `${icon("globe")} n/a`;
 }
 
 // ===============================

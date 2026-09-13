@@ -1,13 +1,13 @@
 // English translations
 const EN_TRANSLATIONS = {
     // Navigation
-    nowPlaying: "▶️ Now Playing",
-    playlist: "🎵 Playlist",
-    playlists: "🎵 Playlists",
-    storage: "🗂️ Storage",
-    iptv: "📺 IPTV",
-    settings: "⚙️ Settings",
-    storageManager: "🗂️ Storage Manager",
+    nowPlaying: "Now Playing",
+    playlist: "Playlist",
+    playlists: "Playlists",
+    storage: "Storage",
+    iptv: "IPTV",
+    settings: "Settings",
+    storageManager: "Storage Manager",
 
     // Player controls
     play: "Play",
@@ -109,7 +109,7 @@ const EN_TRANSLATIONS = {
     playlistLoadError: "Error loading playlist",
 
     // IPTV
-    iptvChannels: "📺 IPTV Channels",
+    iptvChannels: "IPTV Channels",
     searchChannels: "Search channels...",
     iptvCorsHint: "IP addresses always need CORS bypass. HTTP URLs often need CORS. HTTPS usually works without CORS. If a channel doesn't play, try enabling CORS bypass.",
     import: "Import",
@@ -342,9 +342,9 @@ const EN_TRANSLATIONS = {
     screenshotFailed: "Unable to capture screenshot. The video source may be cross-origin without CORS.",
     saveLocations: "Save Locations",
     saveLocationsHint: "Configure where screen recordings, video recordings, and screenshots are saved. Set via Storage directory context menu.",
-    screenRecordingLocationLabel: "📹 Screen Recording:",
-    videoRecordingLocationLabel: "🎬 Video Recording:",
-    screenshotLocationLabel: "🖼️ Screenshot:",
+    screenRecordingLocationLabel: "Screen Recording:",
+    videoRecordingLocationLabel: "Video Recording:",
+    screenshotLocationLabel: "Screenshot:",
     noLocationSet: "Not set (downloads to browser default)",
     clearScreenRecordingLocation: "Clear Screen Recording",
     clearVideoRecordingLocation: "Clear Video Recording",

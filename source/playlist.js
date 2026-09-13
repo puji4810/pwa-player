@@ -396,16 +396,16 @@ async function playlist_renderTree() {
 
     Object.entries(playlists).forEach(([playlistName, items]) => {
         const isDefault = playlistName === defaultPlaylist;
-        const defaultBadge = isDefault ? ' ⭐' : '';
+        const defaultBadge = isDefault ? ' ' + icon('star') : '';
 
         const li = document.createElement("li");
         li.className = "storage-node";
 
         li.innerHTML = `
             <div class="storage-header">
-                <button class="toggle">+</button>
+                <button class="toggle">${icon('chevronRight')}</button>
                 <span class="storage-name">${escapeHTML(playlistName)}${defaultBadge} (${items.length})</span>
-                <button class="storage-menu" title="Menu">⋮</button>
+                <button class="storage-menu" title="Menu">${icon('ellipsisV')}</button>
             </div>
             <ul class="storage-sub hidden"></ul>
         `;
@@ -419,7 +419,7 @@ async function playlist_renderTree() {
         header.addEventListener("click", (e) => {
             if (e.target === menuBtn) return;
             const hidden = itemsContainer.classList.toggle("hidden");
-            toggleBtn.textContent = hidden ? "+" : "−";
+            setIcon(toggleBtn, hidden ? "chevronRight" : "chevronDown");
         });
 
         // Burger menu button
@@ -441,7 +441,7 @@ async function playlist_renderTree() {
                 <div class="storage-sub-header">
                     <span class="sub-name">${escapeHTML(itemName)}${badgesHtml}</span>
                     <div class="sub-actions">
-                        <button class="sub-menu" title="Menu">⋮</button>
+                        <button class="sub-menu" title="Menu">${icon('ellipsisV')}</button>
                     </div>
                 </div>
             `;
@@ -483,7 +483,7 @@ function showPlaylistHeaderMenu(playlistName, button) {
     menu.innerHTML = `
         <div class="menu-item" data-action="play">${t('playThis', 'Play')}</div>
         <div class="menu-item" data-action="play-keep-open">${t('playKeepPanel', 'Play (keep panel open)')}</div>
-        <div class="menu-item" data-action="set-default">${isDefault ? '⭐ ' + t('defaultPlaylist', 'Default') : t('setDefaultPlaylist', 'Set as Default')}</div>
+        <div class="menu-item" data-action="set-default">${isDefault ? icon('star') + ' ' + t('defaultPlaylist', 'Default') : t('setDefaultPlaylist', 'Set as Default')}</div>
         <div class="menu-item" data-action="add-url">${t('addUrlToPlaylist', 'Add URL to Playlist')}</div>
         <div class="menu-item" data-action="rename">${t('rename', 'Rename')}</div>
         <div class="menu-item" data-action="duplicate">${t('duplicate', 'Duplicate')}</div>

@@ -1,13 +1,13 @@
 // Japanese translations
 const JA_TRANSLATIONS = {
     // Navigation
-    nowPlaying: "▶️ 再生中",
-    playlist: "🎵 プレイリスト",
-    playlists: "🎵 プレイリスト",
-    storage: "🗂️ ストレージ",
-    iptv: "📺 IPTV",
-    settings: "⚙️ 設定",
-    storageManager: "🗂️ ストレージ管理",
+    nowPlaying: "再生中",
+    playlist: "プレイリスト",
+    playlists: "プレイリスト",
+    storage: "ストレージ",
+    iptv: "IPTV",
+    settings: "設定",
+    storageManager: "ストレージ管理",
 
     // Player controls
     play: "再生",
@@ -106,7 +106,7 @@ const JA_TRANSLATIONS = {
     playlistLoadError: "プレイリスト読み込みエラー",
 
     // IPTV
-    iptvChannels: "📺 IPTVチャンネル",
+    iptvChannels: "IPTVチャンネル",
     searchChannels: "チャンネルを検索...",
     iptvCorsHint: "IPアドレスは常にCORSバイパスが必要。HTTP URLは多くの場合CORSが必要。HTTPSは通常CORS不要。チャンネルが再生されない場合はCORSバイパスを有効にしてください。",
     import: "インポート",
@@ -339,9 +339,9 @@ const JA_TRANSLATIONS = {
     screenshotFailed: "スクリーンショットを取得できません。動画ソースがクロスオリジンまたはCORSが有効でない可能性があります。",
     saveLocations: "保存場所",
     saveLocationsHint: "画面録画、動画録画、スクリーンショットの保存場所を設定。ストレージディレクトリの右クリックメニューで設定。",
-    screenRecordingLocationLabel: "📹 画面録画：",
-    videoRecordingLocationLabel: "🎬 動画録画：",
-    screenshotLocationLabel: "🖼️ スクリーンショット：",
+    screenRecordingLocationLabel: "画面録画：",
+    videoRecordingLocationLabel: "動画録画：",
+    screenshotLocationLabel: "スクリーンショット：",
     noLocationSet: "未設定（ブラウザのデフォルトにダウンロード）",
     clearScreenRecordingLocation: "画面録画を清除",
     clearVideoRecordingLocation: "動画録画を清除",

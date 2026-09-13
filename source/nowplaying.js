@@ -347,7 +347,8 @@ function updateNowPlayingInfo(entry) {
     const isImage = typeof window.isImageFile === 'function' && window.isImageFile(entry.name || entry.path || '');
 
     // Basic metadata with image indicator
-    titleEl.textContent = isImage ? `🖼️ ${entry.name || "Unknown Title"}` : entry.name || "Unknown Title";
+    titleEl.innerHTML = isImage ? `${icon('photo')} ${escapeHTML(entry.name || "Unknown Title")}` : "";
+    if (!isImage) titleEl.textContent = entry.name || "Unknown Title";
     artistEl.textContent = entry.artist || "";
     urlEl.textContent = entry.path || "";
 }
@@ -632,10 +633,10 @@ function renderNowPlayingQueue() {
 
         // Add image badge if this is an image file
         const isImage = typeof window.isImageFile === 'function' && window.isImageFile(entry.name || entry.path || '');
-        const imageBadge = isImage ? ' 🖼️' : '';
+        const imageBadge = isImage ? ' ' + icon('photo') : '';
 
         // Add playing indicator if this is the current track
-        const playingIndicator = isCurrentTrack ? '▶ ' : '';
+        const playingIndicator = isCurrentTrack ? icon('play') + ' ' : '';
         titleSpan.innerHTML = `${playingIndicator}${escapeHTML(entry.name || entry.path)}${imageBadge}${badgesHtml}`;
 
         // Click on title → play
@@ -649,7 +650,7 @@ function renderNowPlayingQueue() {
         // Menu button (⋮)
         const menuBtn = document.createElement("button");
         menuBtn.className = "np-item-menu";
-        menuBtn.textContent = "⋮";
+        setIcon(menuBtn, "ellipsisV");
         menuBtn.title = "Menu";
         menuBtn.addEventListener("click", (e) => {
             e.stopPropagation();
@@ -666,21 +667,9 @@ function renderNowPlayingQueue() {
 function updatePlayModeButton() {
     const btn = document.getElementById("playModeBtn");
 
-    switch (playMode) {
-        case "once":
-            btn.textContent = "➡️";
-            break;
-        case "repeat":
-            btn.textContent = "🔁";
-            break;
-        case "repeat-one":
-            btn.textContent = "🔂";
-            break;
-        case "shuffle":
-            btn.textContent = "🔀";
-            break;
-    }
-    document.getElementById("npPlayModeBtn").textContent = btn.textContent;
+    const modeIcons = { once: "once", repeat: "repeat", "repeat-one": "repeatOne", shuffle: "shuffle" };
+    setIcon(btn, modeIcons[playMode] || "once");
+    setIcon(document.getElementById("npPlayModeBtn"), btn.dataset.icon);
 }
 
 async function loadPlayMode() {
