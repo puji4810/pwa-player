@@ -13,8 +13,13 @@
 
 const sideEdgeTrigger = document.getElementById("sideEdgeTrigger");
 const sideRail = document.getElementById("sideRail");
+const sideRailHandle = document.getElementById("sideRailHandle");
 const sideRailPlayerBtn = document.getElementById("sideRailPlayerBtn");
 const sideRailSep = document.getElementById("sideRailSep");
+
+// On touch devices the OS back gesture owns edge swipes, so the rail is
+// opened via the visible handle instead of the invisible edge zone.
+const coarsePointer = window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
 
 const SIDE_SHEET_CLOSE_MS = 320;
 const RAIL_AUTOHIDE_MS = 4500;
@@ -88,16 +93,20 @@ function showSideRail() {
     });
 
     sideRail.classList.remove("hidden");
+    document.body.classList.add("rail-shown");
     requestAnimationFrame(() => requestAnimationFrame(() => {
         sideRail.classList.add("rail-visible");
     }));
 
-    railAutoHideTimer = setTimeout(hideSideRail, RAIL_AUTOHIDE_MS);
+    if (!coarsePointer) {
+        railAutoHideTimer = setTimeout(hideSideRail, RAIL_AUTOHIDE_MS);
+    }
 }
 
 function hideSideRail() {
     clearTimeout(railHideTimer);
     clearTimeout(railAutoHideTimer);
+    document.body.classList.remove("rail-shown");
     if (!sideRail || sideRail.classList.contains("hidden")) return;
     sideRail.classList.remove("rail-visible");
     railHideTimer = setTimeout(() => sideRail.classList.add("hidden"), 300);
@@ -257,6 +266,42 @@ if (sideRailPlayerBtn) {
     });
 }
 
+// Visible edge handle (touch devices): tap toggles the rail, dragging it
+// inward opens it. A drag-open must swallow the trailing click or it
+// would immediately toggle the rail back shut.
+let handleDragSuppressClick = false;
+if (sideRailHandle) {
+    let handleStart = null;
+    sideRailHandle.addEventListener("pointerdown", (e) => {
+        handleStart = { x: e.clientX, y: e.clientY };
+        handleDragSuppressClick = false;
+        try { sideRailHandle.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    sideRailHandle.addEventListener("pointermove", (e) => {
+        if (!handleStart) return;
+        const side = getSidePanelSide();
+        const inward = side === "right" ? handleStart.x - e.clientX : e.clientX - handleStart.x;
+        if (inward > 24) {
+            handleStart = null;
+            handleDragSuppressClick = true;
+            showSideRail();
+        }
+    });
+    ["pointerup", "pointercancel"].forEach(ev =>
+        sideRailHandle.addEventListener(ev, () => { handleStart = null; }));
+    sideRailHandle.addEventListener("click", () => {
+        if (handleDragSuppressClick) {
+            handleDragSuppressClick = false;
+            return;
+        }
+        if (sideRail && sideRail.classList.contains("rail-visible")) {
+            hideSideRail();
+        } else {
+            showSideRail();
+        }
+    });
+}
+
 // Pointerdown outside the sheet dismisses it (Esc and the sheet's back
 // button also close it). Clicks inside an embedded iframe never reach
 // us, so over embedded content the rail/back button remain the way out.
@@ -265,17 +310,30 @@ document.addEventListener("pointerdown", (e) => {
     const view = document.getElementById(sidePanelViewId);
     if (!view || view.contains(e.target)) return;
     if (sideRail && sideRail.contains(e.target)) return;
+    if (sideRailHandle && sideRailHandle.contains(e.target)) return;
     if (sideEdgeTrigger && sideEdgeTrigger.contains(e.target)) return;
     if (e.target.closest && e.target.closest(".context-menu")) return;
     if (e.target.closest && e.target.closest(".scroll-btn")) return;
     closeSidePanel();
 });
 
+// Tapping anywhere outside a visible rail retracts it (the rail also
+// auto-hides after a few seconds; on desktop hover-leave hides it).
+document.addEventListener("pointerdown", (e) => {
+    if (!sideRail || !sideRail.classList.contains("rail-visible")) return;
+    if (sideRail.contains(e.target)) return;
+    if (sideRailHandle && sideRailHandle.contains(e.target)) return;
+    if (sideEdgeTrigger && sideEdgeTrigger.contains(e.target)) return;
+    hideSideRail();
+});
+
 // ---------- touch gestures ----------
 
-// Edge swipe reveals the rail (works over embedded iframes too)
+// Edge swipe reveals the rail (fine pointers only — on touch devices the
+// OS back gesture claims edge swipes, so the handle is the opener there)
 document.addEventListener("touchstart", (e) => {
     edgeSwipe = null;
+    if (coarsePointer) return;
     if (e.touches.length !== 1) return;
     const side = getSidePanelSide();
     if (side === "off") return;

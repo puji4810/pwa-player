@@ -472,12 +472,13 @@ input[type="range"]::-moz-range-thumb {
 /* Mobile Tuning */
 @media (max-width: 600px) {
   :root {
-    --button-font-size: 16px;
-    --button-size: 40px;
+    --button-font-size: 15px;
+    --button-size: 34px;
     --group-gap: 0px;
+    --row-gap: 4px;
     --volume-width: 110px;
     --progress-width: 90%;
-    --controls-padding: 6px 10px;
+    --controls-padding: 4px 8px;
   }
 
   #controls {
@@ -1291,6 +1292,65 @@ body.side-right #embeddedShowControlsBtn {
 }
 body.side-left #sideEdgeTrigger { left: 0; }
 body.side-right #sideEdgeTrigger { right: 0; }
+
+/* Visible grab handle — touch devices only. The invisible edge zone is
+   disabled there because the OS back gesture claims edge swipes.
+   Hit area stays wide; the visible part is just a thin glass sliver. */
+#sideRailHandle {
+    position: fixed;
+    top: 42%;
+    left: 0;
+    z-index: 1400;
+    display: none;
+    width: 22px;
+    height: 64px;
+    touch-action: none;
+    cursor: grab;
+}
+#sideRailHandle::before {
+    content: "";
+    position: absolute;
+    top: 10px;
+    left: 0;
+    width: 6px;
+    height: 44px;
+    border-radius: 0 6px 6px 0;
+    background: rgba(255, 255, 255, 0.28);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+#sideRailHandle:active::before {
+    background: rgba(255, 255, 255, 0.5);
+}
+body.side-right #sideRailHandle {
+    left: auto;
+    right: 0;
+}
+body.side-right #sideRailHandle::before {
+    left: auto;
+    right: 0;
+    border-radius: 6px 0 0 6px;
+}
+/* Rail open → the handle steps aside */
+body.rail-shown #sideRailHandle {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease;
+}
+@media (prefers-color-scheme: light) {
+    #sideRailHandle::before {
+        background: rgba(60, 60, 67, 0.3);
+    }
+    #sideRailHandle:active::before {
+        background: rgba(60, 60, 67, 0.5);
+    }
+}
+@media (pointer: coarse) {
+    body.side-left #sideRailHandle,
+    body.side-right #sideRailHandle { display: block; }
+    #sideEdgeTrigger { display: none !important; }
+}
 
 #sideRail {
     position: fixed;

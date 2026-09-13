@@ -2567,15 +2567,19 @@ ensureControlsVisibility();
   if (burgerBtn) {
     burgerBtn.addEventListener("click", () => {
         const currentlyHidden = configOptions && configOptions.classList.contains("hidden");
+        localStorage.setItem("burgerMenuUserSet", "true");
         expandCollapseBurgerMenu(!currentlyHidden);
     });
   }
 
-  // Initialize from saved state (default to expanded/visible)
+  // Initialize: previous versions always saved burgerMenuHidden on load,
+  // so the saved value alone can't tell a real user choice apart from the
+  // old default — only trust it once the burger button was actually used.
+  // Otherwise default to collapsed on small screens (full dock too tall).
   const savedHidden = localStorage.getItem("burgerMenuHidden");
-  if (savedHidden === null) {
-    // Default: show the expanded rows
-    expandCollapseBurgerMenu(false);
+  const burgerUserSet = localStorage.getItem("burgerMenuUserSet") === "true";
+  if (!burgerUserSet && window.matchMedia("(max-width: 600px)").matches) {
+    expandCollapseBurgerMenu(true);
   } else {
     expandCollapseBurgerMenu(savedHidden === "true");
   }
