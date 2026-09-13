@@ -636,6 +636,20 @@ html, body {
     box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.3);
 }
 
+/* Options render in the native (light) dropdown — keep text dark so
+   it stays readable against the white popup background */
+.language-select option {
+    color: #1c1c1e;
+    background: #fff;
+}
+
+/* Inline selects inside a setting row take the remaining space */
+.setting-label .language-select {
+    flex: 1;
+    margin-bottom: 0;
+    min-width: 0;
+}
+
 /* Setting toggle — iOS switch (label left, switch right) */
 .setting-toggle,
 .setting-label.checkbox-label {
