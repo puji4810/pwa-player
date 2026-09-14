@@ -1738,6 +1738,7 @@ function setupSubtitleMediaSession(textTrack) {
 
 // Force subtitle MediaSession update on seek (browsers may not fire cuechange on seek)
 video.addEventListener('seeked', () => {
+  rewindSeekPending = false;
   const tracks = video.textTracks;
   for (let i = 0; i < tracks.length; i++) {
     if (tracks[i].mode === 'showing') {
@@ -2707,6 +2708,7 @@ let savedPreservesPitch = true;
 let rewindIntervalId = null;
 let rewindTarget = 0;
 let rewindWasPlaying = false;
+let rewindSeekPending = false;
 let gestureHintTimer = null;
 let lastTapTime = 0;
 let lastTapSide = 0;
@@ -2759,6 +2761,10 @@ function activateTouchGesture() {
     clearTimeout(tapToggleTimer);
     tapToggleTimer = null;
     lastTapTime = 0;
+    // Some devices re-fire touchstart during a hold; a second activation must
+    // not stack intervals — an orphaned rewind timer keeps seeking and
+    // flickering the overlay forever after release.
+    if (touchGestureActive) return;
     if (touchStartSide > 0) {
         if (video.readyState < 1) return;
         touchGestureActive = 'speed';
@@ -2780,9 +2786,17 @@ function activateTouchGesture() {
         // value until the async seek lands, so decrementing off it would
         // repeatedly seek to nearly the same point and the display jitters.
         rewindTarget = video.currentTime;
+        rewindSeekPending = false;
+        clearInterval(rewindIntervalId);
         rewindIntervalId = setInterval(() => {
+            // Accumulate the target every tick, but only issue a seek once the
+            // previous one landed — on slow/network sources stacked seeks fire
+            // canplay/seeked out of order and the overlay flickers.
             rewindTarget = Math.max(bounds.start, rewindTarget - REWIND_STEP_SECS);
-            video.currentTime = rewindTarget;
+            if (!rewindSeekPending) {
+                rewindSeekPending = true;
+                video.currentTime = rewindTarget;
+            }
             showVideoTimeSeek(rewindTarget, bounds.end);
         }, REWIND_TICK_MS);
     }
@@ -2966,6 +2980,9 @@ let reconnectTimer = null;
 
 // Triggered when the video element encounters a playback error during streaming
 video.addEventListener("error", () => {
+    // A glitchy seek step during a hold gesture isn't a dead source — don't
+    // tear down and reload the stream out from under the user's finger.
+    if (touchGestureActive || scrubbing) return;
     const retryDelay = typeof getRetryDelay === 'function' ? getRetryDelay() : 0;
 
     // Clear any previous reconnect attempts
