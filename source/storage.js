@@ -2363,8 +2363,8 @@ function renderFileItem(subList, name, handle, entry, currentPath = "") {
         <div class="storage-file-header">
             <span class="file-name">${icon("file")} ${escapeHTML(name)}</span>
             <div class="file-actions">
-                ${isPlayable ? '<button class="file-play" title="Play">${icon("play")}</button>' : ''}
-                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>' : ''}
+                ${isPlayable ? `<button class="file-play" title="Play">${icon("play")}</button>` : ''}
+                ${isSubtitle ? `<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>` : ''}
                 <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>
@@ -2441,8 +2441,8 @@ function renderIndexedDBFileItem(subList, name, fileEntry, entry, folderPath = "
         <div class="storage-file-header">
             <span class="file-name">${icon("file")} ${escapeHTML(name)}</span>
             <div class="file-actions">
-                ${isPlayable ? '<button class="file-play" title="Play">${icon("play")}</button>' : ''}
-                ${isSubtitle ? '<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>' : ''}
+                ${isPlayable ? `<button class="file-play" title="Play">${icon("play")}</button>` : ''}
+                ${isSubtitle ? `<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>` : ''}
                 <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>

@@ -27,8 +27,8 @@ PWA Player: `+F),t?d.url=C:(s=await C.getFile(),d.files=[s]),navigator.share&&na
         <div class="storage-file-header">
             <span class="file-name">${icon("file")} ${escapeHTML(t)}</span>
             <div class="file-actions">
-                ${r?'<button class="file-play" title="Play">${icon("play")}</button>':""}
-                ${s?'<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>':""}
+                ${r?`<button class="file-play" title="Play">${icon("play")}</button>`:""}
+                ${s?`<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>`:""}
                 <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>
@@ -36,8 +36,8 @@ PWA Player: `+F),t?d.url=C:(s=await C.getFile(),d.files=[s]),navigator.share&&na
         <div class="storage-file-header">
             <span class="file-name">${icon("file")} ${escapeHTML(a)}</span>
             <div class="file-actions">
-                ${n?'<button class="file-play" title="Play">${icon("play")}</button>':""}
-                ${s?'<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>':""}
+                ${n?`<button class="file-play" title="Play">${icon("play")}</button>`:""}
+                ${s?`<button class="file-subtitle" title="Load Subtitle">${icon("subtitles")}</button>`:""}
                 <button class="file-menu" title="Menu">${icon("ellipsisV")}</button>
             </div>
         </div>

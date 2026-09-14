@@ -385,10 +385,39 @@ function getActiveDuration() {
     return video ? video.duration : 0;
 }
 
+// Seekable range for the active player. Live streams have duration = Infinity,
+// so fall back to video.seekable (DVR window). Returns null when nothing can
+// be seeked yet — callers must not seek or show seek previews in that case.
+function getSeekableBounds() {
+    if (typeof isEmbeddedPlayerActive === 'function' && isEmbeddedPlayerActive()) {
+        const d = getActiveDuration();
+        return (isFinite(d) && d > 0) ? { start: 0, end: d } : null;
+    }
+    const video = document.getElementById("player");
+    if (!video) return null;
+    try {
+        if (video.seekable && video.seekable.length > 0) {
+            const start = video.seekable.start(0);
+            const end = video.seekable.end(video.seekable.length - 1);
+            if (isFinite(start) && isFinite(end) && end > start) {
+                return { start, end };
+            }
+        }
+    } catch (e) {}
+    const d = video.duration;
+    return (isFinite(d) && d > 0) ? { start: 0, end: d } : null;
+}
+
 // Seek active player to time (handles both video and embedded)
 function seekActivePlayerToTime(seconds) {
+  // Reject non-finite targets (Infinity/NaN): assigning them to
+  // video.currentTime throws TypeError, which would leave pendingSeekTarget
+  // stuck and freeze the time display.
+  if (!isFinite(seconds) || seconds < 0) {
+    return;
+  }
   const activeduration = getActiveDuration();
-  if (!activeduration || !seconds)
+  if (!activeduration)
   {
     return;
   }
@@ -1357,18 +1386,28 @@ window.pendingSeekTarget = null; // track where we want to seek to (global for s
 
 function performSkip(direction, pressDuration = 0) {
     if (pressDuration < 0) pressDuration = 0;
+    direction = Math.sign(direction) || 0;
 
-    let duration = getActiveDuration();
-    const currentTime = getActiveCurrentTime();
+    const bounds = getSeekableBounds();
+    const seekStart = bounds ? bounds.start : 0;
+    const seekEnd = bounds ? bounds.end : 0;
+
+    let currentTime = getActiveCurrentTime();
+    if (!isFinite(currentTime)) currentTime = seekStart;
+    currentTime = Math.max(seekStart, Math.min(currentTime, seekEnd));
 
     let clampedTime;
-    if (currentTime<=0 && direction < 0)
+    if (!bounds || !direction || seekEnd <= seekStart)
     {
-      clampedTime = 0;
+      clampedTime = currentTime;
     }
-    else if (duration<=currentTime && 0 < direction)
+    else if (currentTime <= seekStart && direction < 0)
     {
-      clampedTime = duration;
+      clampedTime = seekStart;
+    }
+    else if (currentTime >= seekEnd && direction > 0)
+    {
+      clampedTime = seekEnd;
     }
     else
     {
@@ -1383,7 +1422,7 @@ function performSkip(direction, pressDuration = 0) {
       const t2 = 3000;                // 3 seconds
       const accelEnd = 30000;         // 30 seconds
 
-      const maxSkip = duration * (skipPercentMax / 100);
+      const maxSkip = (seekEnd - seekStart) * (skipPercentMax / 100);
 
       let skipAmount;
 
@@ -1411,17 +1450,12 @@ function performSkip(direction, pressDuration = 0) {
           if (skipAmount < skipMid) skipAmount = skipMid;
       }
       const newTime = currentTime + direction * skipAmount;
-      clampedTime = Math.max(0, Math.min(newTime, duration || 0));
+      clampedTime = Math.max(seekStart, Math.min(newTime, seekEnd));
 
     }
-    let displaystring;
-    // Update time display immediately (visual feedback)
-    if (Number.isNaN(duration))
-    {
-      duration = 0;
-      clampedTime = 0;
-    }
-    displaystring = `${formatTime(clampedTime)} / ${formatTime(duration)}`;
+    if (!isFinite(clampedTime)) clampedTime = currentTime;
+
+    const displaystring = `${formatTime(clampedTime)} / ${formatTime(seekEnd)}`;
 
     // Store pending seek target
     window.pendingSeekTarget = clampedTime;
@@ -1429,9 +1463,9 @@ function performSkip(direction, pressDuration = 0) {
     updateTimeDisplay(displaystring);
 
     // Update progress bar visually (without triggering seek)
-    progressBar.max = duration;
+    progressBar.max = seekEnd;
     progressBar.value = clampedTime;
-    npProgressBar.max = duration;
+    npProgressBar.max = seekEnd;
     npProgressBar.value = clampedTime;
 }
 
@@ -1450,8 +1484,7 @@ function startSkip(direction) {
     window.hasControlsPointerActivity = true;
     skippingTime = null;
 
-    let getactiveaction = getActiveDuration();
-    if (!getactiveaction || Number.isNaN(getactiveaction))
+    if (!getSeekableBounds())
     {
       skipDirection = 0;
       skipPressStartTime = 0;
@@ -1958,14 +1991,41 @@ video.addEventListener("timeupdate", () => {
 function fullscreencallback()
 {
   const embeddedActive = typeof isEmbeddedPlayerActive === 'function' && isEmbeddedPlayerActive();
+  const inNativeVideoFs = video.webkitDisplayingFullscreen === true;
 
-  if (document.fullscreenElement) {
-    document.exitFullscreen();
+  if (document.fullscreenElement || document.webkitFullscreenElement || inNativeVideoFs) {
+    if (document.exitFullscreen) {
+        document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+    }
+    if (inNativeVideoFs) video.webkitExitFullscreen();
     if (!embeddedActive) {
         showControls(hasActiveSource);
     }
   } else {
-    document.documentElement.requestFullscreen();
+    // On touch devices, fullscreen the <video> element itself: Chrome enters
+    // overlay video mode which skips the persistent "swipe down to exit"
+    // toast, and iOS Safari only supports video fullscreen anyway. Our dock
+    // lives outside the fullscreen subtree, so embedded content keeps the
+    // document-level path (its controls and side rail still work there).
+    if (!embeddedActive && isCoarsePointerDevice() && hasActiveSource && video.readyState >= 1) {
+        if (video.requestFullscreen) {
+            const p = video.requestFullscreen();
+            if (p && p.catch) p.catch(() => {
+                const q = document.documentElement.requestFullscreen();
+                if (q && q.catch) q.catch(() => {});
+            });
+        } else if (video.webkitRequestFullscreen) {
+            video.webkitRequestFullscreen();
+        } else if (video.webkitEnterFullscreen) {
+            video.webkitEnterFullscreen();
+        }
+    } else {
+        const p = document.documentElement.requestFullscreen ?
+            document.documentElement.requestFullscreen() : null;
+        if (p && p.catch) p.catch(() => {});
+    }
     // For embedded player, don't hide controls - fullscreen works same as non-fullscreen
     if (hasActiveSource && !embeddedActive) {
         hideControls();
@@ -2289,8 +2349,8 @@ function showVideoTimeSeek(pendingSeekTarget,duration) {
   videoStatusIcon.className = "";
   videoStatusIcon.textContent = "";
 
-  let textcontent = pendingSeekTarget?formatTime(pendingSeekTarget):"";
-  if(pendingSeekTarget && duration) {
+  let textcontent = isFinite(pendingSeekTarget)?formatTime(pendingSeekTarget):"";
+  if(isFinite(pendingSeekTarget) && isFinite(duration) && duration > 0) {
     textcontent = `${textcontent} / ${formatTime(duration)}`;
   }
   videoStatusText.textContent = textcontent;
@@ -2360,7 +2420,7 @@ document.addEventListener("keydown", (e) => {
         if (!isArrowKeyDown)
         {
           isArrowKeyDown = (e.code=="ArrowLeft"?-1:1);
-          startSkip(skippingTime);
+          startSkip(isArrowKeyDown);
         }
         showVideoTimeSeek(window.pendingSeekTarget, getActiveDuration());
       }
@@ -2530,14 +2590,252 @@ playerWrapper.addEventListener("click", (e) => {
         return;
     }
 
+    // Touch devices: taps in the left/right 40% zones participate in
+    // double-tap seeking — defer the controls toggle so a second tap on the
+    // same side cancels it and performs a seek instead. Center stays instant.
+    if (isCoarsePointerDevice() && touchGesturesEnabled()) {
+        if (touchGestureSuppressClick) {
+            touchGestureSuppressClick = false;
+            return;
+        }
+        const w = document.documentElement.clientWidth;
+        const side = e.clientX < w * 0.4 ? -1 : (e.clientX > w * 0.6 ? 1 : 0);
+        if (side !== 0) {
+            const now = performance.now();
+            if (now - lastTapTime < TOUCH_DOUBLE_TAP_MS && lastTapSide === side) {
+                clearTimeout(tapToggleTimer);
+                tapToggleTimer = null;
+                lastTapTime = 0;
+                doubleTapSeek(side);
+                return;
+            }
+            lastTapTime = now;
+            lastTapSide = side;
+            tapToggleTimer = setTimeout(() => {
+                tapToggleTimer = null;
+                toggleControlsFromTap(target);
+            }, TOUCH_DOUBLE_TAP_MS);
+            return;
+        }
+    }
+
+    toggleControlsFromTap(target);
+});
+
+function toggleControlsFromTap(target) {
+    const controlsHidden = controls.classList.contains("hidden");
     if (controlsHidden) {
         // Show controls when clicking anywhere
         showControls(true);
-    } else if (!controls.contains(target)) {
+    } else if (target && !controls.contains(target)) {
         // Clicking outside controls: hide if playing, otherwise do nothing
         if (hasActiveSource) {
             hideControls();
         }
+    }
+}
+
+// =====================================================
+// Mobile touch gestures on the video surface
+// - long-press right side: hold for 2x playback speed
+// - long-press left side:  hold to rewind at ~2x speed
+// - double-tap left/right side: seek -/+10s
+// Only for the built-in player — the embedded iframe and the image viewer
+// have their own touch handling.
+// =====================================================
+const TOUCH_LONG_PRESS_MS = 350;
+const TOUCH_MOVE_SLOP = 14;        // px before a press counts as a drag
+const TOUCH_DOUBLE_TAP_MS = 320;
+const DOUBLE_TAP_SKIP_SECS = 10;
+const REWIND_TICK_MS = 100;
+const REWIND_STEP_SECS = 0.2;      // 0.2s per 100ms tick ≈ 2x rewind
+
+let touchPressTimer = null;
+let touchGestureActive = null;     // 'speed' | 'rewind'
+let touchStartX = 0;
+let touchStartY = 0;
+let touchStartSide = 0;
+let savedPlaybackRate = 1;
+let savedPreservesPitch = true;
+let rewindIntervalId = null;
+let gestureHintTimer = null;
+let lastTapTime = 0;
+let lastTapSide = 0;
+let tapToggleTimer = null;
+let touchGestureSuppressClick = false;
+let touchActive = false;           // a candidate gesture touch is down
+let scrubbing = false;             // horizontal swipe is scrubbing the timeline
+let scrubBaseTime = 0;
+let scrubBounds = null;
+
+function isCoarsePointerDevice() {
+    return window.matchMedia && window.matchMedia("(pointer: coarse)").matches;
+}
+
+function touchGesturesEnabled() {
+    if (!hasActiveSource) return false;
+    if (typeof isEmbeddedPlayerActive === 'function' && isEmbeddedPlayerActive()) return false;
+    if (typeof window.isImageViewerActive === 'function' && window.isImageViewerActive()) return false;
+    return true;
+}
+
+function showGestureHint(text) {
+    if (!videoStatusOverlay) return;
+    videoStatusIcon.className = "";
+    videoStatusIcon.textContent = "";
+    videoStatusText.textContent = text;
+    videoStatusOverlay.classList.remove("hidden");
+}
+
+function doubleTapSeek(side) {
+    const bounds = getSeekableBounds();
+    if (!bounds) {
+        toggleControlsFromTap(null);
+        return;
+    }
+    const target = Math.max(bounds.start,
+        Math.min(bounds.end, getActiveCurrentTime() + side * DOUBLE_TAP_SKIP_SECS));
+    seekActivePlayerToTime(target);
+    showVideoTimeSeek(target, bounds.end);
+    clearTimeout(gestureHintTimer);
+    gestureHintTimer = setTimeout(hideVideoStatus, 700);
+}
+
+function activateTouchGesture() {
+    touchPressTimer = null;
+    // A single-tap toggle may be pending from a preceding tap — cancel it so
+    // the hold doesn't toggle controls mid-gesture.
+    clearTimeout(tapToggleTimer);
+    tapToggleTimer = null;
+    lastTapTime = 0;
+    if (touchStartSide > 0) {
+        if (video.readyState < 1) return;
+        touchGestureActive = 'speed';
+        savedPlaybackRate = video.playbackRate || 1;
+        savedPreservesPitch = video.preservesPitch;
+        video.playbackRate = 2;
+        if ('preservesPitch' in video) video.preservesPitch = true;
+        showGestureHint("2×");
+    } else if (touchStartSide < 0) {
+        const bounds = getSeekableBounds();
+        if (!bounds) return;
+        touchGestureActive = 'rewind';
+        rewindIntervalId = setInterval(() => {
+            const target = Math.max(bounds.start, video.currentTime - REWIND_STEP_SECS);
+            video.currentTime = target;
+            showVideoTimeSeek(target, bounds.end);
+        }, REWIND_TICK_MS);
+    }
+    if (touchGestureActive) touchGestureSuppressClick = true;
+}
+
+function releaseTouchGesture() {
+    if (touchGestureActive === 'speed') {
+        video.playbackRate = savedPlaybackRate;
+        if ('preservesPitch' in video && savedPreservesPitch !== undefined) {
+            video.preservesPitch = savedPreservesPitch;
+        }
+        hideVideoStatus();
+    } else if (touchGestureActive === 'rewind') {
+        clearInterval(rewindIntervalId);
+        rewindIntervalId = null;
+        gestureHintTimer = setTimeout(hideVideoStatus, 400);
+    }
+    touchGestureActive = null;
+}
+
+function cancelTouchPress() {
+    clearTimeout(touchPressTimer);
+    touchPressTimer = null;
+    if (touchGestureActive) releaseTouchGesture();
+}
+
+// Map horizontal finger travel to a time delta. A full-width swipe covers
+// ~10% of the seekable range (min 60s, capped by the range itself) so short
+// clips stay precise and long videos still scrub usefully.
+function updateScrub(dx) {
+    if (!scrubBounds) return;
+    const w = document.documentElement.clientWidth;
+    const len = scrubBounds.end - scrubBounds.start;
+    const range = Math.min(len, Math.max(60, len * 0.1));
+    const target = Math.max(scrubBounds.start,
+        Math.min(scrubBounds.end, scrubBaseTime + (dx / w) * range));
+    window.pendingSeekTarget = target;
+    progressBar.value = target;
+    npProgressBar.value = target;
+    updateTimeDisplay(`${formatTime(target)} / ${formatTime(scrubBounds.end)}`);
+    showVideoTimeSeek(target, scrubBounds.end);
+}
+
+function endTouch() {
+    touchActive = false;
+    if (scrubbing) {
+        scrubbing = false;
+        const target = window.pendingSeekTarget;
+        window.pendingSeekTarget = null;
+        if (isFinite(target)) seekActivePlayerToTime(target);
+        clearTimeout(gestureHintTimer);
+        gestureHintTimer = setTimeout(hideVideoStatus, 400);
+    }
+    cancelTouchPress();
+}
+
+playerWrapper.addEventListener("touchstart", (e) => {
+    // A leftover suppress flag belongs to the previous touch; this touch's
+    // own long-press sets it again if needed.
+    touchGestureSuppressClick = false;
+    if (!touchGesturesEnabled() || e.touches.length !== 1) {
+        endTouch();
+        return;
+    }
+    const t = e.touches[0];
+    touchActive = true;
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+    const w = document.documentElement.clientWidth;
+    touchStartSide = touchStartX < w * 0.4 ? -1 : (touchStartX > w * 0.6 ? 1 : 0);
+    if (!touchStartSide) return;
+    clearTimeout(touchPressTimer);
+    touchPressTimer = setTimeout(activateTouchGesture, TOUCH_LONG_PRESS_MS);
+}, { passive: true });
+
+playerWrapper.addEventListener("touchmove", (e) => {
+    if (!touchActive) return;
+    const t = e.touches[0];
+    if (!t) return;
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+    if (scrubbing) {
+        updateScrub(dx);
+        return;
+    }
+    // Once a hold gesture is running, finger drift must not cancel it
+    if (touchGestureActive) return;
+    if (Math.abs(dx) <= TOUCH_MOVE_SLOP && Math.abs(dy) <= TOUCH_MOVE_SLOP) return;
+    // Horizontal-dominant drag over a seekable source scrubs the timeline
+    if (Math.abs(dx) > Math.abs(dy) * 1.5) {
+        const bounds = getSeekableBounds();
+        if (bounds && isFinite(getActiveCurrentTime())) {
+            clearTimeout(touchPressTimer);
+            touchPressTimer = null;
+            scrubbing = true;
+            scrubBounds = bounds;
+            scrubBaseTime = getActiveCurrentTime();
+            touchGestureSuppressClick = true;
+            updateScrub(dx);
+            return;
+        }
+    }
+    cancelTouchPress();
+}, { passive: true });
+
+playerWrapper.addEventListener("touchend", endTouch);
+playerWrapper.addEventListener("touchcancel", endTouch);
+
+// Keep Android's long-press context menu from popping during 2x/rewind holds
+playerWrapper.addEventListener("contextmenu", (e) => {
+    if (touchGestureActive || scrubbing || touchPressTimer || touchGestureSuppressClick) {
+        e.preventDefault();
     }
 });
 

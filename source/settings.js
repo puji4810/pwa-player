@@ -679,7 +679,7 @@ if (videoForABLoop) {
 
 // Get active player current time (handles both video and embedded)
 function getActiveCurrentTime() {
-    if (window.pendingSeekTarget != null) {
+    if (window.pendingSeekTarget != null && isFinite(window.pendingSeekTarget)) {
       return window.pendingSeekTarget;
     }
     if (typeof isEmbeddedPlayerActive === 'function' && isEmbeddedPlayerActive()) {
@@ -689,12 +689,12 @@ function getActiveCurrentTime() {
             if (time && typeof time.then === 'function') {
                 return window._cachedEmbeddedCurrentTime || 0;
             }
-            return time || 0;
+            return isFinite(time) ? time : 0;
         }
         return 0;
     }
     const video = document.getElementById("player");
-    return video ? video.currentTime : 0;
+    return video && isFinite(video.currentTime) ? video.currentTime : 0;
 }
 
 // Check if video is non-live (handles both video and embedded)
@@ -710,6 +710,7 @@ function isNonLiveVideo() {
 
 // Format time helper
 function formatTime(seconds) {
+    if (!isFinite(seconds) || seconds < 0) return "0:00";
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs.toString().padStart(2, "0")}`;

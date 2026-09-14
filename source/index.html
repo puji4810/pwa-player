@@ -7,7 +7,7 @@
 
         <!-- Dark mode -->
         <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#000000">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
     	<meta name="msvalidate.01" content="0EBF88DA5B81674DD7E39378483EC964" />
         <meta name="description" content="PWA Player - A modern Progressive Web App for playing videos, audio files, and IPTV streams. Features include playlists, subtitle support, playback speed control, A-B loop, and more." />
@@ -22,7 +22,7 @@
         <h1 style="position:absolute;left:-9999px;top:-9999px;">PWA Player - Video, Audio & IPTV Streaming Player</h1>
         <div id="playerContainer">
             <div id="playerWrapper">
-                <video id="player" crossorigin="anonymous" autoplay></video>
+                <video id="player" crossorigin="anonymous" autoplay playsinline></video>
                 <!-- Audio cover image (shown for audio-only webm files) -->
                 <img id="audioCover" class="hidden" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;">
                 <!-- Image display for image viewing -->
