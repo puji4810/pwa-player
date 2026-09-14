@@ -101,12 +101,15 @@ body {
 #player.rot180 { transform: rotate(180deg); }
 #player.rot270 { transform: rotate(270deg); }
 
-/* When the <video> element itself is fullscreen, Chrome may promote it to a
-   hardware overlay plane that Blink-composited text-track cues cannot draw
-   on. A no-op filter keeps it on the composited path so the mirrored seek
-   feedback cue stays visible. */
+/* When fullscreen is active (element OR document level), Chrome may promote
+   the video to a hardware overlay plane whose geometry is synced separately
+   from the DOM compositor — every overlay show/hide can then flash a stale
+   black/misplaced video region. A no-op filter keeps the video on the
+   composited path in both fullscreen modes. */
 #player:fullscreen,
-#player:-webkit-full-screen {
+#player:-webkit-full-screen,
+:fullscreen #player,
+:-webkit-full-screen #player {
   filter: opacity(0.999);
 }
 
@@ -1401,10 +1404,28 @@ body.rail-shown #sideRailHandle {
         /* Lift the dock above gesture bars / rounded screen edges */
         bottom: calc(env(safe-area-inset-bottom, 0px) + 10px);
     }
+    /* Same compositing artifact applies to every always-on-top blurred
+       surface over the video — strip the blur there too. */
+    #sideRailHandle::before {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: rgba(255, 255, 255, 0.45);
+    }
+    .video-status-content {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+        background: rgba(28, 28, 32, 0.88);
+    }
 }
 @media (pointer: coarse) and (prefers-color-scheme: light) {
     #controls {
         background: rgba(250, 250, 252, 0.88);
+    }
+    #sideRailHandle::before {
+        background: rgba(60, 60, 67, 0.45);
+    }
+    .video-status-content {
+        background: rgba(250, 250, 252, 0.9);
     }
 }
 
