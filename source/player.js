@@ -2698,6 +2698,7 @@ let savedPlaybackRate = 1;
 let savedPreservesPitch = true;
 let rewindIntervalId = null;
 let rewindTarget = 0;
+let rewindWasPlaying = false;
 let gestureHintTimer = null;
 let lastTapTime = 0;
 let lastTapSide = 0;
@@ -2762,6 +2763,11 @@ function activateTouchGesture() {
         const bounds = getSeekableBounds();
         if (!bounds) return;
         touchGestureActive = 'rewind';
+        // Pause first: while playing, the element advances ~0.1s between
+        // seeks so a -0.2s step only nets ~1x backward with forward jitter.
+        // Paused stepping gives a clean 2x rewind.
+        rewindWasPlaying = !video.paused && !video.ended;
+        if (rewindWasPlaying) video.pause();
         // Track the target ourselves: video.currentTime reads back the old
         // value until the async seek lands, so decrementing off it would
         // repeatedly seek to nearly the same point and the display jitters.
@@ -2785,6 +2791,7 @@ function releaseTouchGesture() {
     } else if (touchGestureActive === 'rewind') {
         clearInterval(rewindIntervalId);
         rewindIntervalId = null;
+        if (rewindWasPlaying) video.play().catch(() => {});
         gestureHintTimer = setTimeout(hideVideoStatus, 400);
     }
     touchGestureActive = null;

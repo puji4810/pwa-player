@@ -1229,7 +1229,13 @@ body.side-right #embeddedShowControlsBtn {
     display: none;
 }
 
-/* Compact pill for transient gesture hints — no empty icon box */
+/* Compact pill for transient gesture hints — no empty icon box, pinned to
+   the top so it never covers the center of the picture */
+.video-status-overlay.compact {
+    top: calc(env(safe-area-inset-top, 0px) + 10%);
+    transform: none;
+    align-items: flex-start;
+}
 .video-status-overlay.compact .video-status-content {
     gap: 0;
     padding: 10px 20px;
