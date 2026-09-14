@@ -2051,26 +2051,16 @@ function fullscreencallback()
         showControls(hasActiveSource);
     }
   } else {
-    // On touch devices, fullscreen the <video> element itself: Chrome enters
-    // overlay video mode which skips the persistent "swipe down to exit"
-    // toast, and iOS Safari only supports video fullscreen anyway. Our dock
-    // lives outside the fullscreen subtree, so embedded content keeps the
-    // document-level path (its controls and side rail still work there).
-    if (!embeddedActive && isCoarsePointerDevice() && hasActiveSource && video.readyState >= 1) {
-        if (video.requestFullscreen) {
-            const p = video.requestFullscreen();
-            if (p && p.catch) p.catch(() => {
-                const q = document.documentElement.requestFullscreen();
-                if (q && q.catch) q.catch(() => {});
-            });
-        } else if (video.webkitRequestFullscreen) {
-            video.webkitRequestFullscreen();
-        } else if (video.webkitEnterFullscreen) {
-            video.webkitEnterFullscreen();
-        }
-    } else {
-        const p = document.documentElement.requestFullscreen ?
-            document.documentElement.requestFullscreen() : null;
+    // Document-level fullscreen keeps our dock and status overlay usable.
+    // Exception: iOS Safari on iPhone has no element fullscreen at all —
+    // video.webkitEnterFullscreen (native player UI) is the only option.
+    const docFs = document.documentElement.requestFullscreen ||
+                  document.documentElement.webkitRequestFullscreen;
+    if (!embeddedActive && !docFs && video.webkitEnterFullscreen &&
+        hasActiveSource && video.readyState >= 1) {
+        video.webkitEnterFullscreen();
+    } else if (docFs) {
+        const p = docFs.call(document.documentElement);
         if (p && p.catch) p.catch(() => {});
     }
     // For embedded player, don't hide controls - fullscreen works same as non-fullscreen
@@ -2694,6 +2684,7 @@ function toggleControlsFromTap(target) {
 // =====================================================
 const TOUCH_LONG_PRESS_MS = 350;
 const TOUCH_MOVE_SLOP = 14;        // px before a press counts as a drag
+const SCRUB_START_PX = 24;         // stronger horizontal intent needed to scrub
 const TOUCH_DOUBLE_TAP_MS = 320;
 const DOUBLE_TAP_SKIP_SECS = 10;
 const REWIND_TICK_MS = 100;
@@ -2707,6 +2698,7 @@ let touchStartSide = 0;
 let savedPlaybackRate = 1;
 let savedPreservesPitch = true;
 let rewindIntervalId = null;
+let rewindTarget = 0;
 let gestureHintTimer = null;
 let lastTapTime = 0;
 let lastTapSide = 0;
@@ -2771,10 +2763,14 @@ function activateTouchGesture() {
         const bounds = getSeekableBounds();
         if (!bounds) return;
         touchGestureActive = 'rewind';
+        // Track the target ourselves: video.currentTime reads back the old
+        // value until the async seek lands, so decrementing off it would
+        // repeatedly seek to nearly the same point and the display jitters.
+        rewindTarget = video.currentTime;
         rewindIntervalId = setInterval(() => {
-            const target = Math.max(bounds.start, video.currentTime - REWIND_STEP_SECS);
-            video.currentTime = target;
-            showVideoTimeSeek(target, bounds.end);
+            rewindTarget = Math.max(bounds.start, rewindTarget - REWIND_STEP_SECS);
+            video.currentTime = rewindTarget;
+            showVideoTimeSeek(rewindTarget, bounds.end);
         }, REWIND_TICK_MS);
     }
     if (touchGestureActive) touchGestureSuppressClick = true;
@@ -2863,8 +2859,9 @@ playerWrapper.addEventListener("touchmove", (e) => {
     // Once a hold gesture is running, finger drift must not cancel it
     if (touchGestureActive) return;
     if (Math.abs(dx) <= TOUCH_MOVE_SLOP && Math.abs(dy) <= TOUCH_MOVE_SLOP) return;
-    // Horizontal-dominant drag over a seekable source scrubs the timeline
-    if (Math.abs(dx) > Math.abs(dy) * 1.5) {
+    // Horizontal-dominant drag over a seekable source scrubs the timeline —
+    // require clear horizontal intent so a jittery long-press isn't misread
+    if (Math.abs(dx) > SCRUB_START_PX && Math.abs(dx) > Math.abs(dy) * 1.5) {
         const bounds = getSeekableBounds();
         if (bounds && isFinite(getActiveCurrentTime())) {
             clearTimeout(touchPressTimer);
