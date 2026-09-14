@@ -1981,9 +1981,24 @@ rotationBtn.addEventListener("click", () => {
   const current = orientation.type;
 
   if (current.startsWith("portrait")) {
-    orientation.lock("landscape").catch((err) => {
-      console.warn("Rotation failed:", err);
-    });
+    const lockLandscape = () =>
+      orientation.lock("landscape").catch((err) => {
+        console.warn("Rotation failed:", err);
+      });
+    // screen.orientation.lock only works while the document is fullscreen on
+    // Android — enter fullscreen first, then lock.
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+      const reqFs = document.documentElement.requestFullscreen ||
+                    document.documentElement.webkitRequestFullscreen;
+      const p = reqFs ? reqFs.call(document.documentElement) : null;
+      if (p && p.then) {
+        p.then(lockLandscape).catch(lockLandscape);
+      } else {
+        lockLandscape();
+      }
+    } else {
+      lockLandscape();
+    }
   } else if (current.startsWith("landscape")) {
     orientation.lock("portrait").catch((err) => {
     });
