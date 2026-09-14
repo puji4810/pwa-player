@@ -867,6 +867,7 @@ async function play_source_internal(blobURL, mediametadata, sourceobject, playli
 
     video.srcObject = null;
     video.src = videoSrc;
+    setVideoRotation(0);
     hasActiveSource = true;
     hideControls();
 
@@ -1085,6 +1086,7 @@ function tryPlayUrl(url, title, corsBypass, maxRetries, sourceNum, totalSources)
 
     video.srcObject = null;
     video.src = videoSrc;
+    setVideoRotation(0);
     hasActiveSource = true;
     hideControls();
 
@@ -1974,35 +1976,17 @@ function volumeToggleBtnClick()
 volumeToggleBtn.addEventListener("click", volumeToggleBtnClick);
 npVolumeToggleBtn.addEventListener("click", volumeToggleBtnClick);
 
+let videoRotationDeg = 0;
+
+function setVideoRotation(deg) {
+  videoRotationDeg = ((deg % 360) + 360) % 360;
+  video.classList.toggle("rot90", videoRotationDeg === 90);
+  video.classList.toggle("rot180", videoRotationDeg === 180);
+  video.classList.toggle("rot270", videoRotationDeg === 270);
+}
+
 rotationBtn.addEventListener("click", () => {
-  const orientation = screen?.orientation;
-  if (!orientation || !orientation.lock) return;
-
-  const current = orientation.type;
-
-  if (current.startsWith("portrait")) {
-    const lockLandscape = () =>
-      orientation.lock("landscape").catch((err) => {
-        console.warn("Rotation failed:", err);
-      });
-    // screen.orientation.lock only works while the document is fullscreen on
-    // Android — enter fullscreen first, then lock.
-    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
-      const reqFs = document.documentElement.requestFullscreen ||
-                    document.documentElement.webkitRequestFullscreen;
-      const p = reqFs ? reqFs.call(document.documentElement) : null;
-      if (p && p.then) {
-        p.then(lockLandscape).catch(lockLandscape);
-      } else {
-        lockLandscape();
-      }
-    } else {
-      lockLandscape();
-    }
-  } else if (current.startsWith("landscape")) {
-    orientation.lock("portrait").catch((err) => {
-    });
-  }
+  setVideoRotation(videoRotationDeg + 90);
 });
 
 video.addEventListener("timeupdate", () => {

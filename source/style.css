@@ -88,6 +88,19 @@ body {
   cursor: none;
 }
 
+/* Rotate-view button: CSS rotation works on every device, unlike
+   screen.orientation.lock which requires mobile fullscreen. 90/270 swap
+   the box dimensions so the rotated picture still fills the viewport. */
+#player.rot90,
+#player.rot270 {
+  width: 100vh;
+  height: 100vw;
+  flex-shrink: 0;
+}
+#player.rot90  { transform: rotate(90deg); }
+#player.rot180 { transform: rotate(180deg); }
+#player.rot270 { transform: rotate(270deg); }
+
 /* When the <video> element itself is fullscreen, Chrome may promote it to a
    hardware overlay plane that Blink-composited text-track cues cannot draw
    on. A no-op filter keeps it on the composited path so the mirrored seek
