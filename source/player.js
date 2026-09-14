@@ -287,6 +287,10 @@ function showVideoError(message) {
 
 function hideVideoStatus() {
   if (!videoStatusOverlay) return;
+  // During a rewind hold each seek fires canplay → hideVideoStatus, while the
+  // next tick re-shows the time pill — a hide/show flicker loop. Don't fight
+  // the rewind ticks; releaseTouchGesture hides the pill itself afterwards.
+  if (touchGestureActive === 'rewind') return;
   videoStatusOverlay.classList.add("hidden");
   clearGestureCue();
 }
@@ -917,6 +921,9 @@ async function play_source_internal(blobURL, mediametadata, sourceobject, playli
 
     // Handle stalled/waiting states
     video.onwaiting = () => {
+      // Paused rewind steps fire 'waiting' every tick — showing the spinner
+      // each time makes the overlay flicker madly.
+      if (touchGestureActive === 'rewind') return;
       showVideoLoading();
     };
 
@@ -2683,7 +2690,8 @@ function toggleControlsFromTap(target) {
 // =====================================================
 const TOUCH_LONG_PRESS_MS = 350;
 const TOUCH_MOVE_SLOP = 14;        // px before a press counts as a drag
-const SCRUB_START_PX = 24;         // stronger horizontal intent needed to scrub
+const TOUCH_CANCEL_PX = 30;        // clear drift that kills a pending long-press
+const SCRUB_START_PX = 36;         // stronger horizontal intent needed to scrub
 const TOUCH_DOUBLE_TAP_MS = 320;
 const DOUBLE_TAP_SKIP_SECS = 10;
 const REWIND_TICK_MS = 100;
@@ -2880,7 +2888,11 @@ playerWrapper.addEventListener("touchmove", (e) => {
             return;
         }
     }
-    cancelTouchPress();
+    // Only a clear drag cancels a pending long-press — a finger held still
+    // still drifts a few px and must not abort the hold.
+    if (Math.abs(dx) > TOUCH_CANCEL_PX || Math.abs(dy) > TOUCH_CANCEL_PX) {
+        cancelTouchPress();
+    }
 }, { passive: true });
 
 playerWrapper.addEventListener("touchend", endTouch);
