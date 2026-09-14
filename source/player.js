@@ -286,7 +286,52 @@ function showVideoError(message) {
 function hideVideoStatus() {
   if (!videoStatusOverlay) return;
   videoStatusOverlay.classList.add("hidden");
+  clearGestureCue();
 }
+
+// Mirror of the status overlay for video-element fullscreen: nothing outside
+// the fullscreened <video>'s subtree is rendered there, but text-track cues
+// are painted by the video itself — so seek/gesture feedback survives in
+// Chrome's overlay video mode.
+let gestureTrack = null;
+let gestureCue = null;
+
+function getGestureTrack() {
+    if (!gestureTrack) {
+        gestureTrack = video.addTextTrack("captions", "Gestures", "en");
+    }
+    return gestureTrack;
+}
+
+function syncGestureCue(text) {
+    const inVideoFs = document.fullscreenElement === video ||
+                      document.webkitFullscreenElement === video ||
+                      video.webkitDisplayingFullscreen === true;
+    if (!inVideoFs || !text) {
+        clearGestureCue();
+        return;
+    }
+    const track = getGestureTrack();
+    if (!gestureCue) {
+        gestureCue = new VTTCue(0, Number.MAX_SAFE_INTEGER, text);
+        track.addCue(gestureCue);
+    } else {
+        gestureCue.text = text;
+    }
+    track.mode = "showing";
+}
+
+function clearGestureCue() {
+    if (gestureTrack && gestureCue) {
+        try { gestureTrack.removeCue(gestureCue); } catch (e) {}
+        gestureCue = null;
+        gestureTrack.mode = "disabled";
+    }
+}
+
+// Leaving fullscreen while a cue is showing must not leak it into playback
+document.addEventListener("fullscreenchange", clearGestureCue);
+document.addEventListener("webkitfullscreenchange", clearGestureCue);
 
 function getFileExtension(filename) {
   if (!filename) return "";
@@ -2355,6 +2400,7 @@ function showVideoTimeSeek(pendingSeekTarget,duration) {
   }
   videoStatusText.textContent = textcontent;
   videoStatusOverlay.classList.remove("hidden");
+  syncGestureCue(textcontent);
 }
 
 let isKeyDown = false;
@@ -2685,6 +2731,7 @@ function showGestureHint(text) {
     videoStatusIcon.textContent = "";
     videoStatusText.textContent = text;
     videoStatusOverlay.classList.remove("hidden");
+    syncGestureCue(text);
 }
 
 function doubleTapSeek(side) {
