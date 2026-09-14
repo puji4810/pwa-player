@@ -2067,7 +2067,7 @@ function fullscreencallback()
         hasActiveSource && video.readyState >= 1) {
         video.webkitEnterFullscreen();
     } else if (docFs) {
-        const p = docFs.call(document.documentElement);
+        const p = docFs.call(document.documentElement, { navigationUI: "show" });
         if (p && p.catch) p.catch(() => {});
     }
     // For embedded player, don't hide controls - fullscreen works same as non-fullscreen
