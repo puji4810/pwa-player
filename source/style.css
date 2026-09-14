@@ -88,6 +88,15 @@ body {
   cursor: none;
 }
 
+/* When the <video> element itself is fullscreen, Chrome may promote it to a
+   hardware overlay plane that Blink-composited text-track cues cannot draw
+   on. A no-op filter keeps it on the composited path so the mirrored seek
+   feedback cue stays visible. */
+#player:fullscreen,
+#player:-webkit-full-screen {
+  filter: opacity(0.999);
+}
+
 /* Inline SVG icons scale with font-size */
 .icon {
   width: var(--icon-size);
@@ -1201,6 +1210,16 @@ body.side-right #embeddedShowControlsBtn {
 }
 
 .video-status-overlay.hidden {
+    display: none;
+}
+
+/* Compact pill for transient gesture hints — no empty icon box */
+.video-status-overlay.compact .video-status-content {
+    gap: 0;
+    padding: 10px 20px;
+    border-radius: 999px;
+}
+.video-status-overlay.compact .video-status-icon {
     display: none;
 }
 

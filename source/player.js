@@ -270,6 +270,7 @@ const videoStatusText = document.getElementById("videoStatusText");
 function showVideoLoading() {
   if (!videoStatusOverlay) return;
   const t = (key, params) => window.i18n ? window.i18n.t(key, params) : key;
+  videoStatusOverlay.classList.remove("compact");
   videoStatusIcon.className = "video-status-icon loading";
   videoStatusIcon.textContent = "";
   videoStatusText.textContent = t("videoLoading", "Loading...");
@@ -278,6 +279,7 @@ function showVideoLoading() {
 
 function showVideoError(message) {
   if (!videoStatusOverlay) return;
+  videoStatusOverlay.classList.remove("compact");
   videoStatusIcon.className = "video-status-icon error";
   videoStatusText.textContent = message;
   videoStatusOverlay.classList.remove("hidden");
@@ -2399,6 +2401,7 @@ function showVideoTimeSeek(pendingSeekTarget,duration) {
     textcontent = `${textcontent} / ${formatTime(duration)}`;
   }
   videoStatusText.textContent = textcontent;
+  videoStatusOverlay.classList.add("compact");
   videoStatusOverlay.classList.remove("hidden");
   syncGestureCue(textcontent);
 }
@@ -2730,6 +2733,7 @@ function showGestureHint(text) {
     videoStatusIcon.className = "";
     videoStatusIcon.textContent = "";
     videoStatusText.textContent = text;
+    videoStatusOverlay.classList.add("compact");
     videoStatusOverlay.classList.remove("hidden");
     syncGestureCue(text);
 }
